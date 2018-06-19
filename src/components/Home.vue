@@ -92,6 +92,9 @@
 					this.dataGraph.courses = data.body.cursos
 					this.dataGraph.nodes = data.body.nodos
 					this.dataGraph.interactions = data.body.interacciones
+					for (var curso of this.dataGraph.courses) {
+						this.dataGraphIndex.courses[curso.id_curso] = curso
+					}
 					for (var node of this.dataGraph.nodes) {
 						this.dataGraphIndex.nodes[node.id] = node
 					}
@@ -116,6 +119,7 @@
 				drawer: true,
 				dataGraph: undefined,
 				dataGraphIndex: { 
+						courses: {},
 						nodes: {},
 						edges: {}
 				},

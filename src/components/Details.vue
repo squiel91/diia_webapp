@@ -20,14 +20,7 @@
 					<v-toolbar-title>Interacciones</v-toolbar-title>
 				</v-toolbar>
 				<ul>
-					<li v-for="detailedEdge in edgeDetails.interactions">
-						tipo: {{detailedEdge.tipo }}<br>
-						curso: {{ detailedEdge.curso }}<br>
-						fecha: {{ detailedEdge.fecha }}<br>
-						origen: {{ detailedEdge.origen }}<br>
-						destino: {{ detailedEdge.destino }}<br>
-						polaridad {{ detailedEdge.polaridad }}
-					</li>
+					<interaction v-for="detailedEdge in edgeDetails.interactions" :interaction="detailedEdge" :index="dataGraphIndex"></interaction>
 				</ul>
 			</v-card>
 		</v-dialog>
@@ -35,8 +28,13 @@
 </template>
 
 <script>
+	import Interaction from './Interactions.vue'
+
 	export default {
 		props: ['focused', 'dataGraphIndex'],
+		components: {
+			interaction: Interaction
+		},
 		watch: {
 			'$props':{
 				handler: function (val, oldVal) { 
