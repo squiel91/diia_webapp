@@ -28,6 +28,9 @@
 					if (filter.startDate)
 						if (interaction.fecha && new Date(interaction.fecha) < new Date(filter.startDate))
 							return false
+					if (filter.startDate)
+						if (interaction.fecha && new Date(interaction.fecha) < new Date(filter.startDate))
+							return false
 					if (filter.endDate)
 						if (interaction.fecha && new Date(interaction.fecha) > new Date(filter.endDate))
 							return false
@@ -38,9 +41,11 @@
 				return true
 			},
 			combine(filter) {
+				console.log('Combine START...')
+				var t0 = performance.now();
+
 				if (this.edges) {
 					this.combined_edges_index = {}
-
 					for (var interaction of this.edges) {
 						if (interaction.origen && interaction.destino && this.filter_interaction(interaction, filter)) { // discard the ones that have null
 							// {
@@ -80,7 +85,8 @@
 							if (interaction.polaridad == 'n') {
 								combined_edge.polarity.neutral += 1
 							}
-						}				
+						}
+
 					}
 					this.combined_edges = []
 					function polarity_color(polarity) {
@@ -110,6 +116,8 @@
 					}
 				}
 				this.dataGraphIndex.combined_edges_index = this.combined_edges_index
+				var t1 = performance.now();
+				console.log(`Combine END: ${t1 - t0} milliseconds.`)
 				return this.combined_edges
 			},
 			renderGraph() {
@@ -188,7 +196,7 @@
 				for (var node of this.nodes) {
 					g.nodes.push({
 						id: node.id,
-						label: node.nombre,
+						label: node.nombre.length <= 10? node.nombre : node.nombre.substring(0,9) + '...',
 						type: 'image',
 						url: node_images[node.tipo],
 						x: Math.random(),
@@ -245,9 +253,10 @@
 					)
 					.bind('clickNode', function(e) {
 						if (!justDragged) {
-							vueInstance.$emit('clicked', 
-								e.data.node.id,
-							)
+							vueInstance.$emit('clicked',  {
+								id: e.data.node.id,
+								isNode: true
+							})
 						} else {
 							justDragged  = false
 						}
@@ -260,13 +269,11 @@
 						}
 					)					
 					.bind('clickEdge', function(e) {
-						if (!justDragged) {
-							vueInstance.$emit('EdgeClicked',
-								e.data.edge.id,
-							)
-						} else {
-							justDragged  = false
-						}
+						justDragged  = false
+						vueInstance.$emit('clicked', {
+							id: e.data.edge.id,
+							isNode: false
+						})
 					})
 
 				this.drag = sigma.plugins.dragNodes(s, s.renderers[0])
@@ -305,8 +312,11 @@
 				this.filters = new sigma.plugins.filter(s)
 			},
 			apply_filters(newVal, oldVal) {
+				console.log('Apply_filters START...')
+				var t0 = performance.now();
 				var thisVue = this
 				if (this.filter) {
+					debugger
 					if (this.filter.students) {
 						this.filters.undo('students')
 							.nodesBy(function(n) {
@@ -314,6 +324,17 @@
 						}, 'students')
 						.apply()
 					}
+
+					if (this.filter.courses) {
+						this.filters.undo('node_by_course')
+							.nodesBy(function(n) {
+								return !thisVue.dataGraphIndex.nodes[n.id].cursos || thisVue.filter.courses.filter((node) => thisVue.dataGraphIndex.nodes[n.id].cursos.includes(node)).length > 0
+						}, 'node_by_course')
+						.apply()
+					}
+
+					this.graph.graph.edges().map(a => this.graph.graph.dropEdge(a.id))
+					this.combine(this.filter).map(a => this.graph.graph.addEdge(a))
 
 					if (this.filter.interactionsType) {
 						if (this.filter.interactionsType == 'todas') {
@@ -329,26 +350,16 @@
 							var targetType = short[interactions[1]]
 							this.filters.undo('interactions_by_type')
 								.edgesBy(function(e) {
-									// debugger
 									return originType[thisVue.dataGraphIndex.nodes[e.source].tipo] &&
 										targetType[thisVue.dataGraphIndex.nodes[e.target].tipo]
 							}, 'interactions_by_type')
 							.apply()
 						}	
 					}
-
-					if (this.filter.courses) {
-						this.filters.undo('node_by_course')
-							.nodesBy(function(n) {
-								return !thisVue.dataGraphIndex.nodes[n.id].cursos || thisVue.filter.courses.filter((node) => thisVue.dataGraphIndex.nodes[n.id].cursos.split(',').map(a => eval(a)).includes(node)).length > 0
-						}, 'node_by_course')
-						.apply()
-					}
-
-					this.graph.graph.edges().map(a => this.graph.graph.dropEdge(a.id))
-					this.combine(this.filter).map(a => this.graph.graph.addEdge(a))
 					this.graph.refresh()
 				}
+				var t1 = performance.now();
+				console.log(`Apply_filters END: ${t1 - t0} milliseconds.`)
 			}
 		},
 		data() {
@@ -372,5 +383,13 @@
       left: 0;
       right: 0;
       position: absolute;
+    }
+
+    .graph-container {
+    	width: 100%;
+    }
+
+    .loading {
+    	margin: 0pt auto;
     }
 </style>

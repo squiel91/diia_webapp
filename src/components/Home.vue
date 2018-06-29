@@ -14,7 +14,6 @@
 			></filters>
 		</v-navigation-drawer>
 		<v-toolbar color="primary" dark fixed app clipped-right>
-			<v-btn v-if="clicked" flat @click.stop="clicked = undefined"><v-icon>arrow_back</v-icon></v-btn>
 			<img class="small-logo" src="img/white.png">
 			<v-spacer></v-spacer>
 			<mainheader></mainheader>
@@ -31,30 +30,23 @@
 					fixed
 					bottom
 					left
-					v-if="!clicked" @click.stop="drawer = !drawer">
+					@click.stop="drawer = !drawer">
         			<v-icon>{{ activeFab }}</v-icon>
 					<!-- <v-icon>close</v-icon> -->
-      			</v-btn>
+					</v-btn>
 				</v-fab-transition>
-				<nodedetailed v-if="clicked" :id="clicked"></nodedetailed>
-				<graph v-show="!clicked"
+				<nodedetailed :info="clicked" :index="dataGraphIndex"></nodedetailed>
+				<graph
 				:dataGraph="dataGraph"
 				:dataGraphIndex="dataGraphIndex"
 				:filter="filterConditions"
 				@focused="focused = $event"
 				@clicked="clicked = $event"
-				@clickedEdge="clicked = $event"
 				></graph>
+				<detailed :focused="focused"
+				:dataGraphIndex="dataGraphIndex"></detailed>
       		</v-container>
    		</v-content>
-		<v-footer v-show="!clicked" color="primary"
-			bottom
-			app
-			style="z-index: 100; color: white;"
-		>
-			<detailed :focused="focused"
-			:dataGraphIndex="dataGraphIndex"></detailed>
-		</v-footer>
 	</v-app>
 </template>
 
@@ -86,7 +78,7 @@
 			},
 			fetchData() {
 				// this.$http.get(`http://179.27.71.27/grafoDocente/${this.$store.getters.docente}`, this.$store.getters.sign)
-				this.$http.get('api/interactions.php', this.$store.getters.sign)
+				this.$http.get(`api/interactions.php`, this.$store.getters.sign)
 				.then(data => {
 					this.dataGraph = {}
 					this.dataGraph.courses = data.body.cursos
@@ -116,7 +108,7 @@
 		data() {
 			return {
 				clicked: undefined,
-				drawer: true,
+				drawer: false,
 				dataGraph: undefined,
 				dataGraphIndex: { 
 						courses: {},

@@ -5,36 +5,17 @@
 		</div>
 		<div v-if="focused && focused.isNode" class="alumno">
 			<v-chip><v-avatar style="background-color: white;"><img :src="avatar"></v-avatar><strong>{{ type }}</strong> {{ name }}</v-chip>
-			 <span> Cursos: {{ courses | listar }}</span>
-			<span> (Click para mas detalle)</span>
+			 <span> Cursos: {{ listar_cursos }}</span>
 		</div>
 		<div v-if="focused && !focused.isNode" class="interaccion">
-			<v-chip><strong>Interaccion</strong></v-chip> <span> Cantidad: {{ value }} | {{ origin_target }}</span><v-btn @click="mostrarInteracciones = true">Mostrar</v-btn>
+			<v-chip><strong>Interaccion</strong></v-chip> <span> Cantidad: {{ value }} | {{ origin_target }}</span>
 		</div>
-		<v-dialog v-if="edgeDetails" v-model="mostrarInteracciones" fullscreen hide-overlay transiton="dialog-bottom-transition" scrollable>
-			<v-card tile>
-				<v-toolbar card dark color="primary">
-				<v-btn icon dark @click.native="mostrarInteracciones=false">
-					<v-icon>close</v-icon>
-				</v-btn>
-					<v-toolbar-title>Interacciones</v-toolbar-title>
-				</v-toolbar>
-				<ul>
-					<interaction v-for="detailedEdge in edgeDetails.interactions" :interaction="detailedEdge" :index="dataGraphIndex"></interaction>
-				</ul>
-			</v-card>
-		</v-dialog>
 	</div>
 </template>
 
 <script>
-	import Interaction from './Interactions.vue'
-
 	export default {
 		props: ['focused', 'dataGraphIndex'],
-		components: {
-			interaction: Interaction
-		},
 		watch: {
 			'$props':{
 				handler: function (val, oldVal) { 
@@ -44,11 +25,6 @@
 			}
 		},
 		filters: {
-			listar(list) {
-				if (!list) return ''
-				if (list.length == 1) return list[0]
-				return list.slice(0, list.length - 1).join(', ') + ' y ' +list[list.length - 1]
-			},
 			capitalize(value) {
 				if (!value) return ''
 				value = value.toString()
@@ -56,6 +32,19 @@
 			}
 		},
 		computed: {
+			listar_cursos() {
+				// debugger
+				var list = this.courses
+				if (!list || list.length == 0) return 'No asignado'
+				var list_numbers = eval('[' + list + ']')
+				var index = this.dataGraphIndex
+				var list_names = list_numbers.map(function(c) {
+					// debugger
+					return index.courses[c].titulo
+				})
+				if (list_names.length == 1) return list_names[0]
+				return list_names.slice(0, list_names.length - 1).join(', ') + ' y ' +list_names[list_names.length - 1]
+			},
 			avatar() {
 				var node_images = {
 					Docente: 'img/img0.png', // docente
@@ -101,13 +90,24 @@
 				date: undefined,
 				value: undefined,
 				type: undefined,
-				mostrarInteracciones: false,
 				edgeDetails: undefined
 			}
 		}
 	}
 </script>
 
-<style>
+<style>    
+	.details {
+		background-color: #8e44ad !important;
+	    color: white;
+	    /* width: 100%; */
+	    position: fixed;
+	    padding: 3pt 7pt;
+	    margin: 5pt 7pt;
+	    left: 0pt;
+	    bottom: 0pt;
+	    border-radius: 3pt;
+	}
+
 	
 </style>
