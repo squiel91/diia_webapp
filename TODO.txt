@@ -1,0 +1,41 @@
+TODO
+
+- Improve performance
+- Refactor code
+- Testing
+- Improve date selection
+- Integrate
+? Add node filter
+? add statics
+
+Pedir pedir a Jose Luis:
+----------------------------------
+Hola Jose Luis. Aca estoy con Ofelia y te mandamos los ultimos comentarios de cambios para la API.
+
+Importante:
+
+- Agregar un enpoint que sea de URL_BASE/profesor_id/curso_id y solo devuelva el curso completo del profesor (todas las interacciones y todos los nodos del curso).
+
+- Agregar datos de metricas en cada nodo. Metricas: In degree, Out degree, Closeness, Egen vector, Betweenes, Exectricity.
+
+- Eliminar campos que especifican el curso (ahora es irrelevante porque pido por curso)
+
+- Nombres mas ilustrativos y reales para los recursos y atividades (aunque se repitan, no importa). Hay que tener en mente que posiblemente son los que se van a mostrar en las presentaciones.
+
+
+Notas:
+
+- En las interacciones no es necesario colocar tipo de datos de origin tipo y destino tipo.
+
+- Las interacciones no vienen con id. No es necesario por ahora pero tal vez en el futuro podria haber una vista para cada interaccion.
+
+- Todo campo que tenga valor null podes removerlo para ahorrar tiempo de transferencia.
+
+- Todo cambio que hagas a la estructura avisame.
+
+Saludos,
+Ezequiel
+
+Pedir pedir a Ofelia:
+----------------------------------
+Que me mande la presentacion del paper.

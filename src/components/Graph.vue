@@ -1,7 +1,9 @@
 <template>
 	<div class="graph-container">
-		<div v-if="!dataGraph" class="loading">
-			<v-progress-circular indeterminate :size="50" color="primary"></v-progress-circular>
+		<div style="width:100%; text-align: center; color: gray" v-if="!dataGraph" class="loading">
+			<!-- <v-progress-linear :indeterminate="true" color="primary"></v-progress-linear> -->
+			<v-progress-circular class="mb-3" indeterminate :size="50" color="primary"></v-progress-circular>
+			<div ref="loadingMessage">Cargando datos de curso</div>
 		</div>
 		<div v-show="dataGraph" id="graph" ref="graph"></div>
 	</div>
@@ -9,15 +11,28 @@
 
 <script>
 	export default {
-		props: ['dataGraph', 'filter', 'dataGraphIndex'],
+		props: ['dataGraph', 'filter', 'dataGraphIndex', 'rearange'],
 		watch: {
 			'$props':{
-				handler: function (newVal, oldVal) { 
+				handler: function () {
 					if (!this.rendered && this.dataGraph) {
 						this.renderGraph()
 						this.rendered = true
 					}
-					this.apply_filters(newVal, oldVal)
+					if (this.rendered) {
+						this.apply_filters()
+						if (this.rearange) {
+							this.rearanged = true
+							var thisScoped = this
+							setTimeout(function() {
+								thisScoped.startGravity()
+							}, 0)
+						} else {
+							if (this.rearanged) {
+								this.stopGravity()
+							}
+						}
+					}
 				},
 				deep: true
 			}
@@ -28,41 +43,78 @@
 					if (filter.startDate)
 						if (interaction.fecha && new Date(interaction.fecha) < new Date(filter.startDate))
 							return false
-					if (filter.startDate)
-						if (interaction.fecha && new Date(interaction.fecha) < new Date(filter.startDate))
-							return false
 					if (filter.endDate)
 						if (interaction.fecha && new Date(interaction.fecha) > new Date(filter.endDate))
 							return false
-					if (filter.courses)
-						if (interaction.curso && !filter.courses.includes(interaction.curso))
+					
+					// filter by interaction terminal nodes
+					if (filter.interactions) {
+						let dictNodeTypes = {
+							a:'actividad',
+							d:'docente',
+							e:'estudiante',
+							m:'recurso'
+						}
+						var originType = dictNodeTypes[this.dataGraphIndex.nodes[interaction.origen].tipo]
+						var targetType = dictNodeTypes[this.dataGraphIndex.nodes[interaction.destino].tipo]
+						var currentInteraction = `${originType}-${targetType}`
+						var reversedCurrentInteraction = `${targetType}-${originType}`
+						if (!(filter.interactions[currentInteraction] || filter.interactions[reversedCurrentInteraction]))
 							return false
+					}
+
+					// filter by interaction type
+					if (filter.interactionTypes) {
+						let tipo_name = {
+							vis: 'visto',
+							msj: 'mensaje',
+							pub: 'publicacion',
+							men: 'mencion',
+							rea: 'reaccion',
+							com: 'comentario'
+						}
+						if (!filter.interactionTypes[tipo_name[interaction.tipo]])
+							return false
+					}
+
 				}
 				return true
 			},
+			startGravity() {
+				var forceAtlasConf = {
+					slowDown: 100000, 
+					barnesHutTheta: 1, 
+					linLogMode: false, 
+					gravity: 10, 
+					worker: true, 
+					strongGravityMode: true, 
+					edgeWeightInfluence: 1, 
+					startingIterations: 0
+				}
+
+				this.graph.startForceAtlas2(forceAtlasConf)
+			},
+			stopGravity() {
+				this.graph.killForceAtlas2()
+			},
 			combine(filter) {
-				console.log('Combine START...')
 				var t0 = performance.now();
 
 				if (this.edges) {
 					this.combined_edges_index = {}
 					for (var interaction of this.edges) {
-						if (interaction.origen && interaction.destino && this.filter_interaction(interaction, filter)) { // discard the ones that have null
-							// {
-							//     "id_origen": "2",
-							//     "fecha": 1273959928359,
-							//     "origen": 57,
-							//     "destino": 34,
-							//     "curso": 1,
-							//     "tipo": "com",
-							//     "polaridad": "n"
-							// }
-							var id_comb = `${interaction.origen}_${interaction.destino}`
+						if (interaction.origen && interaction.destino && this.filter_interaction(interaction, filter)) {
+							var id_comb
+							if (interaction.origen > interaction.destino) {
+								id_comb = `${interaction.origen}_${interaction.destino}`
+							} else {
+								id_comb = `${interaction.destino}_${interaction.origen}`
+							}
 							if (!(id_comb in this.combined_edges_index)) {
 								this.combined_edges_index[id_comb] = {
 									id: id_comb,
-									source: interaction.origen,
-									target: interaction.destino,
+									source: interaction.origen > interaction.origen? interaction.origen: interaction.destino,
+									target: interaction.origen > interaction.origen? interaction.destino: interaction.origen,
 									value: 0,
 									interactions: [],
 									polarity: {
@@ -100,9 +152,6 @@
  							return `rgb(255, 255, 0)`
 						else
  							return `rgb(${polarity_negative * 255}, ${polarity_positive * 255}, 0)`
-							
-
-
 					}
 					for (const combined_edge of Object.values(this.combined_edges_index)) {
 						this.combined_edges.push({
@@ -121,6 +170,8 @@
 				return this.combined_edges
 			},
 			renderGraph() {
+				// debugger
+				// this.$refs.loadingMessage.innerText = 'Dibujando el grafo del curso'
 				this.nodes = this.dataGraph.nodes
 				this.edges = this.dataGraph.interactions
 				var g = {
@@ -129,10 +180,10 @@
 					}
 
 				var node_images = {
-					d: 'img/img0.png', // docente
-					e: 'img/img1.png', //alumno
-					m: 'img/img2.png', // material
-					a: 'img/img2.png' // actvidad
+					d: 'img/docente.png', // docente
+					e: 'img/estudiante.png', //estudiante
+					m: 'img/recurso.svg', // recurso
+					a: 'img/actividad.png' // actvidad
 				}
 
 				sigma.utils.pkg('sigma.canvas.nodes');
@@ -196,7 +247,7 @@
 				for (var node of this.nodes) {
 					g.nodes.push({
 						id: node.id,
-						label: node.nombre.length <= 10? node.nombre : node.nombre.substring(0,9) + '...',
+						label: node.nombre.length <= 10? node.nombre : node.nombre.substring(0,11) + '...',
 						type: 'image',
 						url: node_images[node.tipo],
 						x: Math.random(),
@@ -311,51 +362,32 @@
 				}, 1000)
 				this.filters = new sigma.plugins.filter(s)
 			},
-			apply_filters(newVal, oldVal) {
+			apply_filters() {
 				console.log('Apply_filters START...')
 				var t0 = performance.now();
 				var thisVue = this
-				if (this.filter) {
-					debugger
-					if (this.filter.students) {
-						this.filters.undo('students')
-							.nodesBy(function(n) {
-								return thisVue.dataGraphIndex.nodes[n.id].tipo != 'e' || thisVue.filter.students.includes(n.id)
-						}, 'students')
-						.apply()
-					}
+				var dictNodeTypes = {
+					a:'actividad',
+					d:'docente',
+					e:'estudiante',
+					m:'recurso'
+				}
 
-					if (this.filter.courses) {
-						this.filters.undo('node_by_course')
+				if (this.filter && this.filters) {
+					// filters by node types
+					if (this.filter.nodes) {
+						this.filters.undo('nodeTypes')
 							.nodesBy(function(n) {
-								return !thisVue.dataGraphIndex.nodes[n.id].cursos || thisVue.filter.courses.filter((node) => thisVue.dataGraphIndex.nodes[n.id].cursos.includes(node)).length > 0
-						}, 'node_by_course')
+								return thisVue.filter.nodes[
+									dictNodeTypes[thisVue.dataGraphIndex.nodes[n.id].tipo]
+								]
+						}, 'nodeTypes')
 						.apply()
 					}
 
 					this.graph.graph.edges().map(a => this.graph.graph.dropEdge(a.id))
 					this.combine(this.filter).map(a => this.graph.graph.addEdge(a))
 
-					if (this.filter.interactionsType) {
-						if (this.filter.interactionsType == 'todas') {
-							this.filters.undo('interactions_by_type').apply()
-						} else {
-							var short = {
-								'alumno': {e: true},
-								'docente': {d: true},
-								'material/actividad': {m: true, a: true}
-							}
-							var interactions = this.filter.interactionsType.split('-')
-							var originType = short[interactions[0]]
-							var targetType = short[interactions[1]]
-							this.filters.undo('interactions_by_type')
-								.edgesBy(function(e) {
-									return originType[thisVue.dataGraphIndex.nodes[e.source].tipo] &&
-										targetType[thisVue.dataGraphIndex.nodes[e.target].tipo]
-							}, 'interactions_by_type')
-							.apply()
-						}	
-					}
 					this.graph.refresh()
 				}
 				var t1 = performance.now();
@@ -370,7 +402,8 @@
 				combined_edges: undefined,
 				drag: undefined,
 				filters: undefined,
-				graph: undefined
+				graph: undefined,
+				rearanged: false
 			}
 		}
 	}

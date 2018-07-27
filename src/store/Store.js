@@ -8,20 +8,29 @@ export const store = new Vuex.Store({
         email: undefined,
         pass: undefined,
         role: undefined,
-        id_docente: undefined
+        name: undefined,
+        surname: undefined,
+        id_docente: undefined,
+        courses: []
     },
     mutations: {
         authenticate: (context, params) => {
             context.email = params.email
             context.pass = params.pass
             context.role = params.role
+            context.name = params.name
+            context.surname = params.surname
             context.id_docente = params.id_docente
+            context.courses = params.courses
         },
         signOut(state) {
             state.email = undefined
             state.pass = undefined
             state.role = undefined
+            state.name = undefined
+            state.surname = undefined
             state.id_docente = undefined
+            state.courses = []
         }
     },
     getters: {
@@ -36,6 +45,9 @@ export const store = new Vuex.Store({
         },
         docente(state) {
             return state.id_docente
+        },
+        courses(state) {
+            return state.courses
         }
     }
 })

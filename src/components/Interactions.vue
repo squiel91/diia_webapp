@@ -1,17 +1,19 @@
 <template>
-	<li class="interaction_detail">
-		<v-card>
-        <v-card-title primary-title>
-          <div>
-            <h3 class="headline mb-0">{{ tipo_string }}</h3>
-            <div>
-				<div style="font-style: italic; color: gray;">{{ date_string }}</div>
-				De <v-chip>{{ origen_string }}</v-chip> hacia <v-chip>{{ destino_string }}</v-chip>  en el curso {{ curso_string }}<span v-if="polaridad_string">, con <span style="font-weight: bold;" :style="{color: color_string}">polaridad {{ polaridad_string }}</span></span>.
-            </div>
-          </div>
-        </v-card-title>
-      </v-card>
-	</li>
+	<ul>
+		<li class="interaction_detail">
+			<v-card>
+	        <v-card-title primary-title>
+	          <div>
+	            <h3 class="headline mb-0">{{ tipo_string }}</h3>
+	            <div>
+					<div style="font-style: italic; color: gray;">{{ date_string }}</div>
+					De <v-chip>{{ origen_string }}</v-chip> hacia <v-chip>{{ destino_string }}</v-chip> con <span style="font-weight: bold;" :style="{color: color_string}">polaridad {{ polaridad_string }}</span></span>.
+	            </div>
+	          </div>
+	        </v-card-title>
+	      </v-card>
+		</li>
+	</ul>
 </template>
 
 <script>
@@ -23,12 +25,12 @@
 		computed: {
 			tipo_string() {
 				let tipo_name = {
-					vis: 'Visita',
+					vis: 'Visto',
 					msj: 'Mensaje',
 					pub: 'Publicacion',
 					men: 'Mencion',
-					rea: 'REA',
-					com: 'Comunicacion'
+					rea: 'Reaccion',
+					com: 'Comentario'
 				}
 				return tipo_name[this.interaction.tipo] || this.interaction.tipo 
 				
@@ -49,9 +51,6 @@
 					'n': 'neutra'
 				}
 				return polaridad_name[this.interaction.polaridad]
-			},
-			curso_string() {
-				return `${this.index.courses[this.interaction.curso].titulo} (cod:${this.index.courses[this.interaction.curso].codigo})`
 			},
 			origen_string() {
 				return this.index.nodes[this.interaction.origen].nombre
@@ -90,7 +89,12 @@
 	}
 </script>
 
-<style>
+<style scoped>
+	ul {
+		list-style-type: none;
+		margin-top: 10pt;
+	}
+
 	.interaction_detail {
     	padding: 5pt 20pt;
 	}

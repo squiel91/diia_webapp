@@ -141,6 +141,8 @@
                             $row = $result->fetch_array(MYSQLI_ASSOC);
                             $mensaje['success'] = true;
                             $mensaje['email'] = $row['email'];
+                            $mensaje['nombre'] = $row['nombre'];
+                            $mensaje['apellido'] = $row['apellido'];
                             $mensaje['rol'] = $row['rol'];
                             $mensaje['id_docente'] = $row['id_docente'];
                         } else {

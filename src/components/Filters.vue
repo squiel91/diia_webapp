@@ -1,204 +1,241 @@
 <template>
 	<div class="filters">
-		<div class="calendar">
-			<p>Para filtrar por fecha selecciona fecha de inicio y de fin.</p>
-			<v-menu
-				ref="menu"
-				lazy
-				v-model="startDateField"
-				transition="scale-transition"
-				offset-y
-				:nudge-right="40"
+		<h2><v-icon style="color: black !important;">local_library</v-icon>Cursos</h2>
+		<v-select
+        :items="courses"
+        item-text="titulo"
+        item-value="id_curso"
+        v-model="course"
+        solo
+        >
+        </v-select>
+		<h2><v-icon style="color: black !important;">timeline</v-icon>Nodos e interacciones</h2>
+		<touchFilter :nodes="index.nodes" @change="assignTouchFilter($event)"></touchFilter>
+		<h2><v-icon style="color: black !important;">filter_list</v-icon>Tipos de interacciones</h2>
+		<interactionFilter @change="interactionTypes=$event"></interactionFilter>
+		<h2><v-icon style="color: black !important;">event</v-icon>Periodo</h2>
+		<v-menu
+			lazy
+			v-model="startDateField"
+			transition="scale-transition"
+			offset-y
+			:close-on-content-click="false"
+			style="width: 110pt"
+		>
+			<v-text-field
+			slot="activator"
+			label="Inicio"
+			v-model="startDateFormatted"
+			solo
+			clearable
+			readonly
 			>
-				<v-text-field
-				slot="activator"
-				label="Fecha inicio"
-				v-model="startDate"
-				prepend-icon="event"
-				readonly
-				>
-				</v-text-field>
-				<v-date-picker
-				ref="picker"
-				v-model="startDate"
-				min="2017-01-01"
-				:max="new Date().toISOString().substr(0, 10)"
-				>
-				</v-date-picker>
-			</v-menu>
-			<v-menu
-				ref="menu"
-				lazy
-				v-model="endDateField"
-				transition="scale-transition"
-				offset-y
-				:nudge-right="40"
+			</v-text-field>
+			<v-date-picker v-model="startDate" 
+			:max="new Date().toISOString().substr(0, 10)"
+			@input="startDateField = false"
+			locale="es-419"
+			no-title
+			></v-date-picker>
+		</v-menu>
+		<span style="position: relative; bottom: 8pt; font-size: x-large;">-</span>
+		<v-menu
+			lazy
+			v-model="endDateField"
+			prepend-icon="event"
+			offset-y
+			transition="scale-transition"
+			:close-on-content-click="false"
+			style="width: 110pt"
+		>
+			<v-text-field
+			slot="activator"
+			label="Fin"
+			v-model="endDateFormatted"
+			clearable
+			readonly
+			solo
 			>
-				<v-text-field
-				slot="activator"
-				label="Fecha fin"
-				v-model="endDate"
-				prepend-icon="event"
-				readonly
-				>
-				</v-text-field>
-				<v-date-picker
-				ref="picker"
-				v-model="endDate"
-				min="2017-01-01"
-				:max="new Date().toISOString().substr(0, 10)"
-				>
-				</v-date-picker>
-			</v-menu>
-		</div>
+			</v-text-field>
+			<v-date-picker v-model="endDate" 
+			:min="startDate"
+			@input="endDateField = false"
+			locale="es-419"
+			no-title
+			></v-date-picker>
+		</v-menu>
+		<h2><v-icon style="color: black !important;">data_usage</v-icon>Medida</h2>
 		<div class="course">
-			Selecciona los cursos a mostrar.
-			<v-checkbox v-for="course in courses" :key="course.id_curso" 
-						:label="course.titulo" v-model="selectedCourses" :value="course.id_curso"></v-checkbox>
-		</div>
-		<div class="node_type">
-			<v-btn color="normal" flat @click.stop="modalStudents = true">Filtrar por alumnos</v-btn>
-
-			<v-dialog v-model="modalStudents" max-width="500px">
-				<v-card>
-					<v-card-title>
-						<span>Filtro por alumno</span>
-						<v-spacer></v-spacer>
-						<v-menu bottom left>
-							<v-btn icon slot="activator">
-								<v-icon>more_vert</v-icon>
-							</v-btn>
-							<v-list>
-								<v-list-tile @click="selectedStudents = studentIds">
-									<v-list-tile-title>Seleccionar todos</v-list-tile-title>
-								</v-list-tile>
-								<v-list-tile @click="selectedStudents = []">
-									<v-list-tile-title>No seleccionar ninguno</v-list-tile-title>
-								</v-list-tile>
-							</v-list>
-						</v-menu>
-					</v-card-title>
-					<v-card-text>
-						<v-checkbox v-for="student in students" :key="student.id" 
-						:label="student.nombre" v-model="selectedStudents" :value="student.id"></v-checkbox>
-					</v-card-text>
-					<v-card-actions>
-						<v-btn color="primary" flat @click.stop="modalStudents=false">Cancelar</v-btn>
-						<v-btn color="primary" dark @click.stop="modalStudents=false">Aceptar</v-btn>
-					</v-card-actions>
-				</v-card>
-			</v-dialog>
-		</div>
-		<div class="interaction_type">
 			<v-select
-			:items="interactionTypes"
-			v-model="interactionType"
-			label="Tipo de interaccion"
-			item-value="text"
+			solo
+			:items="metrics"
+			item-text="name"
+			v-model="metric"
+			label="Ninguna metrica seleccionada"
+			:hint="metric? metric.explanation : ''"
+	        persistent-hint
+	        return-object
+	        single-line
+	        clearable
 			></v-select>
 		</div>
-		<v-btn color="primary" class="ma-0 wide" :disabled="!changed" @click="change()" full-width>Filtrar</v-btn>
+
+		<v-btn color="primary" class="ma-0 mt-4 wide" :disabled="!changed" @click="filter()" full-width>Aplicar</v-btn>
 	</div>
 </template>
 
 <script>
+	import TouchFilter from './TouchFilter.vue'
+	import InteractionFilter from './InteractionFilter.vue'
+
 	export default {
-		props: ['courses', 'nodes'],
-		methods: {
-			change() {
-				this.$emit('changeFilter', {
-					students: this.selectedStudents,
-					courses: this.selectedCourses,
-					startDate: this.startDate,
-					endDate: this.endDate,
-					interactionsType: this.interactionType
-				})
-				this.changed = false
+		props: ['courses', 'index'],
+		data() {
+			return {
+				// General
+				changed: false,
+
+				// Courses
+				course: undefined,
+
+				// TouchFilter
+				nodes: undefined,
+				interactions: undefined,
+
+				// Interaction types
+				interactionTypes: undefined,
+
+				// Date				
+				startDateField: false,
+				endDateField: false,
+				startDate: undefined,
+				endDate: undefined,
+
+				// Metrics
+				metric: undefined,
+				metrics: [
+					{
+						name: 'Grado de entrada',
+						id: 'ge',
+						explanation: 'Recibe muchas interacciones'
+					},					
+					{
+						name: 'Cercania',
+						id: 'cl',
+						explanation: 'Grado de influencia en el grupo'
+					},
+					{
+						name: 'Egen vector',
+						id: 'ev',
+						explanation: 'Influencia por la importancia de sus contactos'
+					},
+					{
+						name: 'Excentricity',
+						id: 'ex',
+						explanation: 'Envia muchas interacciones'
+					},
+					{
+						name: 'Betweenes',
+						id: 'be',
+						explanation: 'Persona estratégica para diseminar información'
+					},
+					{
+						name: 'Polaridad de sentimiento',
+						id: 'po',
+						explanation: 'Para los mensajes entre personas'
+					}
+				]
 			}
 		},
 		computed: {
-			students() {
-				var students = []
-				for (var node of this.nodes) {
-					if (node.tipo == "e") {
-						students.push(node)
-					}
+			startDateFormatted: {
+				get() {
+					if (!this.startDate) return null
+	        		const [year, month, day] = this.startDate.split('-')
+	        		return `${day}/${month}/${year}`
+				},
+				set(newDate) {
+					this.startDate = newDate
+					if (newDate == null) this.startDate = undefined 
 				}
-				return students
+      		},
+			endDateFormatted: {
+				get() {
+					if (!this.endDate) return null
+	        		const [year, month, day] = this.endDate.split('-')
+	        		return `${day}/${month}/${year}`			
+	        	},
+				set(newDate) {
+					this.endDate = newDate
+					if (newDate == null) this.endDate = undefined 
+				}
+      		}
+		},
+		methods: {
+			assignTouchFilter(data) {
+				this.changed = true
+				this.nodes = data.nodeTypes
+				this.interactions = data.interactionTypes
 			},
-			studentIds() {
-				var studentsIds = []
-				for (var node of this.nodes) {
-					if (node.tipo == "e") {
-						studentsIds.push(node.id)
-					}
-				}
-				return studentsIds
+			filter() {
+				console.log('filter')
+				this.$emit('filter', {
+					course: this.course,
+					nodes: Object.assign({},this.nodes),
+					interactions: Object.assign({},this.interactions),
+					interactionTypes: Object.assign({},this.interactionTypes),
+					startDate: this.startDate,
+					endDate: this.endDate,
+					metric: this.metric? this.metric.id : undefined
+				})
+				this.changed = false	
+			},
+		},
+		mounted() {
+			if (this.courses && this.courses[0]) {
+				this.course = this.courses[0].id_curso 
 			}
+			this.filter()
+			this.changed = false
 		},
 		watch: {
-			'$props': {
+			course() {
+				this.changed = true
+			},
+			interactionTypes: {
 				handler() {
-					if (this.courses) {
-						this.selectedCourses = Object.values(this.courses).map(r => r.id_curso) 
-					}
-					if (this.nodes) {
-						this.selectedStudents = this.nodes.map(r => r.id) 
-					}
+					this.changed = true
 				},
 				deep: true
 			},
-			selectedStudents(newValue) {	
-				this.conditions.students = newValue					
+			startDate() {
 				this.changed = true
 			},
-			selectedCourses(newValue) {
-				this.conditions.courses = newValue
+			endDate() {
 				this.changed = true
 			},
-			startDate(newValue) {
-				this.conditions.startDate = newValue
-				this.changed = true
-			},
-			endDate(newValue) {
-				this.conditions.endDate = newValue
-				this.changed = true
-			},
-			interactionType(newValue) {
-				this.conditions.interactionsType = newValue				
+			metric() {
 				this.changed = true
 			}
 		},
-		data() {
-			return {
-				changed: false,
-				startDateField: false,
-				endDateField: false,
-				selectedStudents: [],
-				selectedCourses: [],
-				modalStudents: false,
-				conditions: {
-					startDate: undefined,
-					endDate: undefined,
-					interactionsType: undefined,
-					students: [],
-					courses: []
-				},
-				startDate: "",
-				endDate: "",
-				interactionType: undefined,
-				interactionTypes: [
-					'todas',
-					'alumno-alumno',
-					'alumno-docente',
-					'alumno-material/actividad'
-				]
-			}
+		components: {
+			touchFilter: TouchFilter,
+			interactionFilter: InteractionFilter
 		}
 	}
 </script>
 
-<style>
+<style scoped>
+	h2 {
+		border-bottom: 2pt solid black;
+		padding-left: 5pt;
+
+	}
+	h2 i {
+		margin-right: 5pt;
+		float: right;
+	}
+
 	button.wide {
 		width: 100%;
 	}

@@ -20,7 +20,7 @@
 					@keyup.enter="signIn()"
 					:rules="[(v) => v && v.length >= 6? true : 'Tiene un minimo de 6 caracteres']"				
 					:append-icon="visible ? 'visibility' : 'visibility_off'"
-					:append-icon-cb="() => (visible = !visible)"
+					@click:append="() => (visible = !visible)"
 					:type="visible ? 'password' : 'text'"
 					></v-text-field>
 					<v-btn class="wide ma-0 mb-2" :loading="loading" full-width color="primary" @click="signIn()">
@@ -99,6 +99,11 @@
 				var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 				return re.test(String(email).toLowerCase());
 			},
+			hasError(message) {
+				this.loading = false
+				this.error = true
+				this.errorMessage = message
+			},
 			signIn() {
         		if (this.$refs.form.validate()) {
 					this.loading = true
@@ -113,18 +118,31 @@
 							var data_json = data.body
 							if (!data_json.error) {
 								if (data_json.rol == 'docente') {
-									this.$store.commit('authenticate', {
-										email: fixedEmail, 
-										pass: fixedPass, 
-										role: data_json.rol,
-										id_docente: data_json.id_docente
-
+									// The professor can be autenticated already but I need to bring the courses before
+									var id_docente = data_json.id_docente
+									this.$http.get(`http://179.27.71.27/consulta/docente/${id_docente}/cursos`)
+									.then(data => {
+										var courses = data.body.cursos
+										if (!courses) {
+											this.hasError('Aun no tienes ningun curso asignado')
+										} else {
+											this.$store.commit('authenticate', {
+												email: fixedEmail, 
+												pass: fixedPass, 
+												name: data_json.nombre,
+												surname: data_json.apellido,
+												role: data_json.rol,
+												id_docente,
+												courses
+											})
+								            this.$router.push('/home')
+										}
+									}, error => {
+										this.hasError('No podemos encontrarte en la plataforma :(')
+										console.log(error)
 									})
-						            this.$router.push('/home')
 								} else {
-									this.loading = false
-									this.error = true
-									this.errorMessage = 'Solo los docentes pueden iniciar sesión en la plataforma DIIA' 
+									this.hasError('Solo los docentes pueden iniciar sesión en la plataforma DIIA')
 								}
 							} else {
 								this.errorMessage = data_json.error

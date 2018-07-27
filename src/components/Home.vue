@@ -1,6 +1,7 @@
 <template>
 	<v-app>
 		<v-navigation-drawer
+			:width="360"
       		fixed
       		v-model="drawer"
       		right
@@ -8,37 +9,44 @@
 			clipped
 			style="z-index: 200;"
     	>
-			<filters class="ma-3" @changeFilter="changeFilter($event)" 
-			:nodes="dataGraph? dataGraph.nodes : []"
-			:courses="dataGraph? dataGraph.courses : []"
+			<filters class="ma-3" @filter="changeFilter($event)" 
+			:courses="courses? courses : []" :index="dataGraphIndex"
 			></filters>
 		</v-navigation-drawer>
 		<v-toolbar color="primary" dark fixed app clipped-right>
-			<img class="small-logo" src="img/white.png">
-			<v-spacer></v-spacer>
-			<mainheader></mainheader>
-			</v-toolbar>
+			<mainheader :courses="dataGraph? dataGraph.courses : []"></mainheader>
+		</v-toolbar>
 		<v-content>
       		<v-container fluid fill-height>
+				<v-btn
+				:key="activeFab"
+				class="mb-5 ml-5"
+				fab
+				fixed
+				bottom
+				left
+				@click.stop="rearange = !rearange">
+    			<v-icon>{{ rearangeFab }}</v-icon>
+				</v-btn>
 				<v-fab-transition>
 				  <v-btn
 					dark
 					color="primary"
 					:key="activeFab"
-					class="mb-5 ml-3"
+					class="mb-5 ml-1"
 					fab
 					fixed
 					bottom
 					left
-					@click.stop="drawer = !drawer">
+					@click.stop="(drawer = !drawer) && (rearange = false)">
         			<v-icon>{{ activeFab }}</v-icon>
-					<!-- <v-icon>close</v-icon> -->
 					</v-btn>
 				</v-fab-transition>
-				<nodedetailed :info="clicked" :index="dataGraphIndex"></nodedetailed>
+				<nodedetailed :info="clicked" :curso="filterConditions && filterConditions.course" :index="dataGraphIndex"></nodedetailed>
 				<graph
 				:dataGraph="dataGraph"
 				:dataGraphIndex="dataGraphIndex"
+				:rearange="rearange"
 				:filter="filterConditions"
 				@focused="focused = $event"
 				@clicked="clicked = $event"
@@ -58,35 +66,29 @@
 	import NodeDetails from './NodeDetails.vue'
 
 	export default {
-		props: {
-			source: String
-		},
 		computed: {
 			activeFab () {
 				return !this.drawer? 'mode_edit' : 'close'
+			},
+			rearangeFab () {
+				return !this.rearange? 'cached' : 'close'
 			}
 		},
 		created() {
 			if (!this.$store.state.email) {
 	            this.$router.push('/')
 			}
-			this.fetchData()
 		},
 		methods: {
 			changeFilter(evt) {
 				this.filterConditions = evt
 			},
 			fetchData() {
-				// this.$http.get(`http://179.27.71.27/grafoDocente/${this.$store.getters.docente}`, this.$store.getters.sign)
-				this.$http.get(`api/interactions.php`, this.$store.getters.sign)
+				this.$http.get(`http://179.27.71.27/consulta/docente/${this.$store.getters.docente}/${this.fetchedCourse}`) // , this.$store.getters.sign) 
 				.then(data => {
 					this.dataGraph = {}
-					this.dataGraph.courses = data.body.cursos
 					this.dataGraph.nodes = data.body.nodos
 					this.dataGraph.interactions = data.body.interacciones
-					for (var curso of this.dataGraph.courses) {
-						this.dataGraphIndex.courses[curso.id_curso] = curso
-					}
 					for (var node of this.dataGraph.nodes) {
 						this.dataGraphIndex.nodes[node.id] = node
 					}
@@ -105,10 +107,24 @@
 			detailed: Details,
 			nodedetailed: NodeDetails
 		},
+		watch: {
+			filterConditions: {
+				handler() {
+					if (this.filterConditions.course != this.fetchedCourse) {
+						this.fetchedCourse = this.filterConditions.course
+						this.fetchData()
+					}
+				},
+				deep: true
+			}
+		},
 		data() {
 			return {
+				courses: this.$store.state.courses,
+				fetchedCourse: undefined,
 				clicked: undefined,
 				drawer: false,
+				rearange: false,
 				dataGraph: undefined,
 				dataGraphIndex: { 
 						courses: {},
@@ -122,11 +138,7 @@
 	}
 </script>
 
-<style>
-	img.small-logo {
-		width: 100pt;
-	}
-
+<style scoped>
 	button.wide {
 		width: 100%;
 	}
