@@ -20,7 +20,10 @@
 						this.rendered = true
 					}
 					if (this.rendered) {
+						console.log(this.filter)
+
 						this.apply_filters()
+						this.apply_visualization(this.filter.metric)
 						if (this.rearange) {
 							this.rearanged = true
 							var thisScoped = this
@@ -38,6 +41,41 @@
 			}
 		},
 		methods: {
+			scale(min, max, val) {
+				let maxSize = 16
+				let minSize = 4
+				let scaleVal = minSize + [(Math.abs(val)-min)/(max-min)]*(maxSize-minSize)
+				console.log(scaleVal)
+				return scaleVal
+			},
+			apply_visualization(vizualizationInfo) {
+				if (vizualizationInfo && this.lastVisualization != vizualizationInfo.querry) {
+					this.$http.get(`http://179.27.71.27/${vizualizationInfo.querry}`)
+					.then(
+						data => {
+							let max = Math.abs(parseFloat(data.body.valorMaximo))
+							let min = Math.abs(parseFloat(data.body.valorMinimo))
+							let values = data.body.metricas
+							for (var [nodeId, value] of Object.entries(values)) {
+								this.graph.graph.nodes(nodeId).size = this.scale(min, max, value)
+							}
+							this.lastVisualization = vizualizationInfo.querry
+							this.graph.refresh()
+						}, error => {
+							console.log('Error at retrieving metric:')
+							console.log(error)
+						}	
+					)
+				} else {
+					if (this.lastVisualization) {
+					    for (var node of this.graph.graph.nodes()) {
+					        node.size = this.DEFAULT_SIZE
+					    }
+					    this.graph.refresh()
+						this.lastVisualization = undefined
+					}
+				}
+			},
 			filter_interaction(interaction, filter) {
 				if (filter) {
 					if (filter.startDate)
@@ -49,34 +87,19 @@
 					
 					// filter by interaction terminal nodes
 					if (filter.interactions) {
-						let dictNodeTypes = {
-							a:'actividad',
-							d:'docente',
-							e:'estudiante',
-							m:'recurso'
-						}
-						var originType = dictNodeTypes[this.dataGraphIndex.nodes[interaction.origen].tipo]
-						var targetType = dictNodeTypes[this.dataGraphIndex.nodes[interaction.destino].tipo]
-						var currentInteraction = `${originType}-${targetType}`
-						var reversedCurrentInteraction = `${targetType}-${originType}`
+						var originType = this.dataGraphIndex.nodes[interaction.origen].tipo
+						var targetType = this.dataGraphIndex.nodes[interaction.destino].tipo
+						var currentInteraction = `${originType}${targetType}`
+						var reversedCurrentInteraction = `${targetType}${originType}`
 						if (!(filter.interactions[currentInteraction] || filter.interactions[reversedCurrentInteraction]))
 							return false
 					}
 
 					// filter by interaction type
 					if (filter.interactionTypes) {
-						let tipo_name = {
-							vis: 'visto',
-							msj: 'mensaje',
-							pub: 'publicacion',
-							men: 'mencion',
-							rea: 'reaccion',
-							com: 'comentario'
-						}
-						if (!filter.interactionTypes[tipo_name[interaction.tipo]])
+						if (!filter.interactionTypes[interaction.tipo])
 							return false
 					}
-
 				}
 				return true
 			},
@@ -149,9 +172,13 @@
 
 						var polarity_val = 0 - polarity_negative + polarity_positive
 						if (total_polarity == 0)
- 							return `rgb(255, 255, 0)`
+ 							return `rgb(150, 150, 150)`
 						else
  							return `rgb(${polarity_negative * 255}, ${polarity_positive * 255}, 0)`
+					}
+					function qty_color(value) {
+							var color_val = (8 - Math.min(value, 8)) * 20 + 50
+							return `rgb(${color_val}, ${color_val}, ${color_val})`
 					}
 					for (const combined_edge of Object.values(this.combined_edges_index)) {
 						this.combined_edges.push({
@@ -159,7 +186,7 @@
 							source: combined_edge.source,
 							target: combined_edge.target,
 							size: combined_edge.value,
-							color: polarity_color(combined_edge.polarity)
+							color: filter && filter.polarity? polarity_color(combined_edge.polarity): qty_color(combined_edge.value)
 
 						})
 					}
@@ -170,7 +197,6 @@
 				return this.combined_edges
 			},
 			renderGraph() {
-				// debugger
 				// this.$refs.loadingMessage.innerText = 'Dibujando el grafo del curso'
 				this.nodes = this.dataGraph.nodes
 				this.edges = this.dataGraph.interactions
@@ -252,8 +278,7 @@
 						url: node_images[node.tipo],
 						x: Math.random(),
 						y: Math.random(),
-
-						size: 1
+						size: this.DEFAULT_SIZE
 					})
 				}
 
@@ -279,8 +304,10 @@
 					graph: g,
 					settings: {
 						doubleClickEnabled: false,
-						minEdgeSize: 0.5,
-						maxEdgeSize: 4,
+						minEdgeSize: 1,
+						maxEdgeSize: 8,
+						minNodeSize: 4,
+						maxNodeSize: 16,
 						enableEdgeHovering: true,
 						edgeHoverColor: '#8e44ad',
 						defaultEdgeHoverColor: '#8e44ad',
@@ -363,25 +390,15 @@
 				this.filters = new sigma.plugins.filter(s)
 			},
 			apply_filters() {
-				console.log('Apply_filters START...')
-				var t0 = performance.now();
 				var thisVue = this
-				var dictNodeTypes = {
-					a:'actividad',
-					d:'docente',
-					e:'estudiante',
-					m:'recurso'
-				}
-
-				if (this.filter && this.filters) {
-					// filters by node types
+				if (this.filter) {
 					if (this.filter.nodes) {
-						this.filters.undo('nodeTypes')
+						this.filters.undo('node')
 							.nodesBy(function(n) {
-								return thisVue.filter.nodes[
-									dictNodeTypes[thisVue.dataGraphIndex.nodes[n.id].tipo]
-								]
-						}, 'nodeTypes')
+								let tipoNodo = thisVue.dataGraphIndex.nodes[n.id].tipo
+								return thisVue.filter.nodes && thisVue.filter.nodes[tipoNodo] 
+									&& (Object.keys(thisVue.filter.individualNodes).length == 0 || thisVue.filter.individualNodes[tipoNodo][n.id].selected)
+						}, 'node')
 						.apply()
 					}
 
@@ -390,8 +407,6 @@
 
 					this.graph.refresh()
 				}
-				var t1 = performance.now();
-				console.log(`Apply_filters END: ${t1 - t0} milliseconds.`)
 			}
 		},
 		data() {
@@ -403,7 +418,10 @@
 				drag: undefined,
 				filters: undefined,
 				graph: undefined,
-				rearanged: false
+				rearanged: false,
+
+				DEFAULT_SIZE: 6,
+				lastVisualization: undefined
 			}
 		}
 	}

@@ -7,7 +7,7 @@
 			</v-btn>
 				<v-toolbar-title>
 					<div class="titleContainer">
-						<div>Detalles</div>
+						
 						<v-progress-circular v-if="loading" class="loading" indeterminate :size="30" color="white"></v-progress-circular>
 					</div>
 			</v-toolbar-title>
@@ -18,10 +18,10 @@
 						<iframe ref="iframe" v-if="mostrarInteracciones" :src="iframeUrl"></iframe>
 					</div>
 					<div v-if="type == 'a'">
-						<h2>Actividad</h2>
+						<vistaActividad :id="info.id"></vistaActividad>
 					</div>
 					<div v-if="type == 'm'">
-						<h2>Recurso</h2>
+						<vistaRecurso :id="info.id"></vistaRecurso>
 					</div>
 					<div v-if="type == 'd'">
 						<h2>Docente</h2>
@@ -39,11 +39,20 @@
 <script>
 	
 	import Interaction from './Interactions.vue'
+	import VistaRecurso from './vistas/Recurso.vue'
+	import VistaActividad from './vistas/Actividad.vue'
 
 	export default {
 	    props: ['info', 'index', 'curso'],
 	    components: {
-			interaction: Interaction
+			interaction: Interaction,
+			vistaActividad: VistaActividad,
+			vistaRecurso: VistaRecurso
+		},
+		methods: {
+			reset() {
+				this.firstChange = false
+			}
 		},
 	    data() {
 	    	return {

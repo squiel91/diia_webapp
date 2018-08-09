@@ -3,7 +3,8 @@
 		<individualSelection 
 		:selection="individualSelectionModal"
 		:elements="nodeIndex"
-		@close="individualSelectionModal = ''">
+		@close="individualSelectionModal = ''"
+		@change="individualSelectionModal = '' ||  emit()">
 		</individualSelection>
 		<table>
 			<tr>
@@ -90,7 +91,6 @@
 				first: true,
 				second: false,
 
-				firstInteraction: true,
 				nodeIndex: undefined,
 				individualSelectionModal: ''
 			}
@@ -101,21 +101,21 @@
 		computed: {
 			interactionNodeTypes() {
 				return {
-					'docente-estudiante': this.docenteEstudiante,
-					'docente-recurso': this.docenteRecurso,
-					'docente-actividad': this.docenteActividad,
-					'estudiante-estudiante': this.estudianteEstudiante,
-					'estudiante-docente': this.estudianteDocente,
-					'estudiante-recurso': this.estudianteRecurso,
-					'estudiante-actividad': this.estudianteActividad
+					'de': this.docenteEstudiante,
+					'dm': this.docenteRecurso,
+					'da': this.docenteActividad,
+					'ee': this.estudianteEstudiante,
+					'ed': this.estudianteDocente,
+					'em': this.estudianteRecurso,
+					'ea': this.estudianteActividad
 				}
 			},
 			nodeTypes() {
 				return {
-					'estudiante': this.estudiante,
-					'docente': this.docente,
-					'recurso': this.recurso,
-					'actividad': this.actividad
+					'e': this.estudiante,
+					'd': this.docente,
+					'm': this.recurso,
+					'a': this.actividad
 				}
 			}
 		},
@@ -140,7 +140,7 @@
 		},
 		methods: {
 			initialize() {
-				if (this.firstInteraction && this.nodes) {
+				if (!this.nodeIndex && this.nodes) {
 					var nodeIndex = {}
 					for (var node of Object.values(this.nodes)) {
 						if (!(node.tipo in nodeIndex)) {
@@ -151,15 +151,17 @@
 							info: node 
 						}
 					}
-					console.log(nodeIndex)
 					this.nodeIndex = nodeIndex
-					this.firstInteraction = false
 				}
+			},
+			clearIndividualNodes() {
+				this.individualNodes = undefined
 			},
 			emit() {
 				this.$emit('change', {
 					interactionTypes: this.interactionNodeTypes,
-					nodeTypes: this.nodeTypes
+					nodeTypes: this.nodeTypes,
+					individualNodes: Object.assign({}, this.nodeIndex)
 				})
 			},
 			clickEstudiante(){
@@ -263,19 +265,19 @@
 			},
 			doubleClickEstudiante() {
 				if (!this.estudiante) this.singleClickEstudiante()
-				console.log('individualSelectionModal = true')
+				this.emit()
 				this.individualSelectionModal = 'e' 
 				this.$emit('selectEstudiante')
 			},
 			doubleClickRecurso() {
 				if (!this.recurso) this.singleClickRecurso()
-				console.log('individualSelectionModal = true')
+				this.emit()
 				this.individualSelectionModal = 'm'
 				this.$emit('selectRecurso')
 			},
 			doubleClickActividad() {
 				if (!this.actividad) this.singleClickActividad()
-				console.log('individualSelectionModal = true')
+				this.emit()
 				this.individualSelectionModal = 'a'
 				this.$emit('selectActividad')
 			},
@@ -365,7 +367,7 @@
 	.fade-enter-active, .fade-leave-active {
 		transition: opacity .5s;
 	}
-	.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+	.fade-enter, .fade-leave-to {
 		opacity: 0;
 	}
 
@@ -417,8 +419,8 @@
 		margin-left: 8%;
 		border: 2pt solid gray;	
 		border-left: none;
-		border-top-right-radius: 10pt;
-		border-bottom-right-radius: 10pt;
+		border-top-right-radius: 20pt;
+		border-bottom-right-radius: 20pt;
 	}
 
 	.upDown {

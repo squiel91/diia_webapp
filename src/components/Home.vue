@@ -42,7 +42,7 @@
         			<v-icon>{{ activeFab }}</v-icon>
 					</v-btn>
 				</v-fab-transition>
-				<nodedetailed :info="clicked" :curso="filterConditions && filterConditions.course" :index="dataGraphIndex"></nodedetailed>
+				<nodedetailed ref="nodedetailed" :info="clicked" :curso="filterConditions && filterConditions.course" :index="dataGraphIndex"></nodedetailed>
 				<graph
 				:dataGraph="dataGraph"
 				:dataGraphIndex="dataGraphIndex"
@@ -110,8 +110,11 @@
 		watch: {
 			filterConditions: {
 				handler() {
+					console.log(this.filterConditions)
 					if (this.filterConditions.course != this.fetchedCourse) {
 						this.fetchedCourse = this.filterConditions.course
+						this.dataGraph = undefined
+						this.$refs.nodedetailed.reset()
 						this.fetchData()
 					}
 				},

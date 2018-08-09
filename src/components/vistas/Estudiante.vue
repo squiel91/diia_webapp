@@ -1,0 +1,1 @@
+<iframe ref="iframe" v-if="mostrarInteracciones" :src="iframeUrl"></iframe>

@@ -19,12 +19,12 @@
 				</v-menu>
 			</v-card-title>
 			<v-card-text>
-				<v-checkbox color="primary" v-for="element in elementSelection" :key="element.info.id" 
+				<v-checkbox color="primary" class="ma-0" v-for="element in elementSelection" :key="element.info.id" 
 				:label="element.info.nombre || element.info.titulo" v-model="element.selected" :value="element.selected"></v-checkbox>
 			</v-card-text>
 			<v-card-actions>
 				<v-btn color="primary" flat @click="$emit('close')">Cancelar</v-btn>
-				<v-btn color="primary" dark @click="$emit('close')">Aceptar</v-btn>
+				<v-btn color="primary" dark @click="$emit('change')">Aceptar</v-btn>
 			</v-card-actions>
 		</v-card>
 	</v-dialog>
@@ -52,30 +52,13 @@
 			elementSelection() {
 				return this.selection? this.elements[this.selection] : []
 			}
-		// 	students() {
-		// 		var students = []
-		// 		for (var node of this.nodes) {
-		// 			if (node.tipo == "e") {
-		// 				students.push(node)
-		// 			}
-		// 		}
-		// 		return students
-		// 	},
-		// 	studentIds() {
-		// 		var studentsIds = []
-		// 		for (var node of this.nodes) {
-		// 			if (node.tipo == "e") {
-		// 				studentsIds.push(node.id)
-		// 			}
-		// 		}
-		// 		return studentsIds
-		// 	}
 		},
 		methods: {
 			batchChange(value) {
 				var self = this
-				Object.keys(this.newSelection).forEach(element_key => 
-					self.newSelection[k] = value)
+				Object.keys(this.elementSelection).forEach(element_key => {
+					self.elements[self.selection][element_key].selected = value
+				})
 			}
 		}
 	}
@@ -83,4 +66,5 @@
 </script>
 
 <style scoped>
+
 </style>

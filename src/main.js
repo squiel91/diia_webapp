@@ -15,7 +15,11 @@ Vue.use(Vuetify, {
 	}
 })
 Vue.use(VueResource)
-Vue.http.options.root = 'http://localhost:80/'
+
+if (window.location.href.indexOf('localhost') >= 0) {
+  	console.log('Developer Mode');
+	Vue.http.options.root = 'http://localhost:80/'
+}
 
 import Login from './components/Login.vue'
 import Home from './components/Home.vue'

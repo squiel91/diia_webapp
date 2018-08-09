@@ -1,11 +1,11 @@
 <template>
 	<ul class="interactionFilter">
-		<li @click="click('publicacion')" :class="{selected: interactionTypes.publicacion}"><v-icon>import_contacts</v-icon><span class="label">Publicacion</span></li>
-		<li @click="click('comentario')" :class="{selected: interactionTypes.comentario}"><v-icon>message</v-icon><span class="label">Comentario</span></li>
-		<li @click="click('visto')" :class="{selected: interactionTypes.visto}"><v-icon>done</v-icon><span class="label">Visto</span></li>
-		<li @click="click('mensaje')" :class="{selected: interactionTypes.mensaje}"><v-icon>forum</v-icon><span class="label">Mensaje</span></li>
-		<li @click="click('reaccion')" :class="{selected: interactionTypes.reaccion}"><v-icon>thumbs_up_down</v-icon><span class="label">Reaccion</span></li>
-		<li @click="click('mencion')" :class="{selected: interactionTypes.mencion}"><v-icon>person_add</v-icon><span class="label">Mencion</span></li>
+		<li @click="click('pub')" :class="{selected: interactionTypes.pub}"><v-icon>import_contacts</v-icon><span class="label">Publicacion</span></li>
+		<li @click="click('com')" :class="{selected: interactionTypes.com}"><v-icon>message</v-icon><span class="label">Comentario</span></li>
+		<li @click="click('vis')" :class="{selected: interactionTypes.vis}"><v-icon>done</v-icon><span class="label">Visto</span></li>
+		<li @click="click('msj')" :class="{selected: interactionTypes.msj}"><v-icon>forum</v-icon><span class="label">Mensaje</span></li>
+		<li @click="click('rea')" :class="{selected: interactionTypes.rea}"><v-icon>thumbs_up_down</v-icon><span class="label">Reaccion</span></li>
+		<li @click="click('men')" :class="{selected: interactionTypes.men}"><v-icon>person_add</v-icon><span class="label">Mencion</span></li>
 	</ul>
 </template>
 
@@ -14,13 +14,12 @@
 		data() {
 			return {
 				interactionTypes: {
-					publicacion: true,
-					comentario: true,
-					mensaje: true,
-					visto: true,
-					reaccion: true,
-					mensaje: true,
-					mencion: true
+					pub: true,
+					com: true,
+					vis: true,
+					rea: true,
+					msj: true,
+					men: true
 				}
 			}
 		},
