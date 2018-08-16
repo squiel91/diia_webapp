@@ -6,10 +6,12 @@
       		v-model="drawer"
       		right
       		app
-			clipped
+      		clipped
+			:mobile-break-point="500"
 			style="z-index: 200;"
+			class="pa-0"
     	>
-			<filters class="ma-3" @filter="changeFilter($event)" 
+			<filters class="ma-3" ref="filter" @filter="changeFilter($event)" 
 			:courses="courses? courses : []" :index="dataGraphIndex"
 			></filters>
 		</v-navigation-drawer>
@@ -51,6 +53,8 @@
 				:filter="filterConditions"
 				@focused="focused = $event"
 				@clicked="clicked = $event"
+				@loadingLess="loadingLess()"
+				@loadingMore="loadingMore()"
 				></graph>
 				<detailed :focused="focused"
 				:dataGraphIndex="dataGraphIndex"></detailed>
@@ -81,10 +85,17 @@
 			}
 		},
 		methods: {
+			loadingLess() {
+				this.$refs.filter.loading(-1)
+			},
+			loadingMore() {
+				this.$refs.filter.loading(1)
+			},
 			changeFilter(evt) {
 				this.filterConditions = evt
 			},
 			fetchData() {
+				this.loadingMore()
 				this.$http.get(`http://179.27.71.27/consulta/docente/${this.$store.getters.docente}/${this.fetchedCourse}`) // , this.$store.getters.sign) 
 				.then(data => {
 					this.dataGraph = {}
@@ -96,6 +107,7 @@
 					for (var edge of this.dataGraph.interactions) {
 						this.dataGraphIndex.edges[edge.id] = edge
 					}
+					this.loadingLess()
 				}, error => {
 					console.log(error)
 				})
@@ -127,7 +139,7 @@
 				courses: this.$store.state.courses,
 				fetchedCourse: undefined,
 				clicked: undefined,
-				drawer: false,
+				drawer: true,
 				rearange: false,
 				dataGraph: undefined,
 				dataGraphIndex: { 

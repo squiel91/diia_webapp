@@ -85,7 +85,7 @@
 		</v-tooltip>
 
 
-		<v-btn color="primary" class="ma-0 mt-4 wide" :disabled="!changed" @click="filter()" full-width>Aplicar</v-btn>
+		<v-btn :loading="loadingCount > 0" color="primary" class="ma-0 mt-4 wide" :disabled="(loadingCount <= 0) && !changed" @click="filter()" full-width>Aplicar</v-btn>
 		<v-snackbar
 	  	bottom
       	v-model="sending"
@@ -107,6 +107,7 @@
 				// General
 				lastCourse: undefined,
 				changed: false,
+				loadingCount: 0,
 
 				// Courses
 				course: undefined,
@@ -189,6 +190,10 @@
       		}
 		},
 		methods: {
+			loading(modifyBy) {
+				this.loadingCount += modifyBy
+				if (this.loadingCount < 0) this.loadingCount = 0
+			},
 			clone(obj) {
 				return JSON.parse(JSON.stringify(obj))
 			},
@@ -231,6 +236,8 @@
 				}
 
 				this.lastCourse = this.course
+
+				this.loadingCount = 1
 
 				this.$emit('filter', {
 					course: this.course,

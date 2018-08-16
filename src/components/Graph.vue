@@ -17,12 +17,14 @@
 				handler: function () {
 					if (!this.rendered && this.dataGraph) {
 						this.renderGraph()
+						this.$emit('loadingLess')
 						this.rendered = true
 					} else {
 						if (this.rendered && this.graph) {
 							this.apply_filters()
 							this.graph.refresh()
 							this.apply_visualization()
+							this.$emit('loadingLess')
 							if (this.rearange) {
 								this.rearanged = true
 								var self = this
@@ -67,6 +69,7 @@
 				if (this.filter) {
 					let vizualizationInfo = this.filter.metric
 					if (vizualizationInfo && this.lastVisualization != vizualizationInfo.querry) {
+						this.$emit('loadingMore')
 						this.$http.get(`http://179.27.71.27/${vizualizationInfo.querry}`)
 						.then(
 							data => {
@@ -77,6 +80,7 @@
 									this.graph.graph.nodes(nodeId).size = this.scale(min, max, value)
 								}
 								this.lastVisualization = vizualizationInfo.querry
+								this.$emit('loadingLess')
 								this.graph.refresh()
 							}, error => {
 								console.log('Error at retrieving metric:')
@@ -180,21 +184,21 @@
 
 					}
 					this.combined_edges = []
-					function polarity_color(polarity) {
+					function qty_color(value) {
+							var color_val = (8 - Math.min(value, 8)) * 20 + 50
+							return `rgb(${color_val}, ${color_val}, ${color_val})`
+					}
+					function polarity_color(polarity, value, alternativeFunction) {
 
 						var total_polarity = polarity.positive + polarity.negative + polarity.neutral
 						var polarity_positive = polarity.positive / total_polarity
 						var polarity_negative = polarity.negative / total_polarity
 
 						var polarity_val = 0 - polarity_negative + polarity_positive
-						if (total_polarity == 0)
- 							return `rgb(150, 150, 150)`
+						if (polarity_negative + polarity_positive == 0)
+ 							return alternativeFunction(value)
 						else
  							return `rgb(${polarity_negative * 255}, ${polarity_positive * 255}, 0)`
-					}
-					function qty_color(value) {
-							var color_val = (8 - Math.min(value, 8)) * 20 + 50
-							return `rgb(${color_val}, ${color_val}, ${color_val})`
 					}
 					for (const combined_edge of Object.values(this.combined_edges_index)) {
 						this.combined_edges.push({
@@ -202,7 +206,7 @@
 							source: combined_edge.source,
 							target: combined_edge.target,
 							size: combined_edge.value,
-							color: filter && filter.polarity? polarity_color(combined_edge.polarity): qty_color(combined_edge.value)
+							color: filter && filter.polarity? polarity_color(combined_edge.polarity, combined_edge.value, qty_color): qty_color(combined_edge.value)
 
 						})
 					}
