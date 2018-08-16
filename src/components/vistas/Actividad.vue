@@ -78,8 +78,8 @@ export default {
 					img: 'imagen',
 					tex: 'texto',
 					gif: 'GIF animado',
-					des: 'DES',
-					lik: 'LIK'
+					des: 'Desconocido',
+					lik: 'Enlace'
 				}[this.contentType]
 			},
 			contentTypeImg() {
@@ -88,8 +88,8 @@ export default {
 					img: 'img/img.png',
 					tex: 'img/tex.png',
 					gif: 'img/gif.png',
-					des: 'img/gif.png',
-					lik: 'img/gif.png'
+					des: 'img/unknown.png',
+					lik: 'img/link.png'
 				}[this.contentType]
 			}
 		},
@@ -135,7 +135,9 @@ export default {
 		display: inline-block;
 		padding: 7pt;
 		width: 110pt;
-		margin-right: 10pt
+	    height: 140pt;
+	    overflow: hidden;
+		margin-right: 10pt;
 	}
 
 	.grid {

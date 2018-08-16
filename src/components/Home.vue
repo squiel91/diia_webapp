@@ -44,6 +44,7 @@
 				</v-fab-transition>
 				<nodedetailed ref="nodedetailed" :info="clicked" :curso="filterConditions && filterConditions.course" :index="dataGraphIndex"></nodedetailed>
 				<graph
+				ref="graph"
 				:dataGraph="dataGraph"
 				:dataGraphIndex="dataGraphIndex"
 				:rearange="rearange"
@@ -110,11 +111,11 @@
 		watch: {
 			filterConditions: {
 				handler() {
-					console.log(this.filterConditions)
 					if (this.filterConditions.course != this.fetchedCourse) {
 						this.fetchedCourse = this.filterConditions.course
 						this.dataGraph = undefined
 						this.$refs.nodedetailed.reset()
+						this.$refs.graph.reset()
 						this.fetchData()
 					}
 				},

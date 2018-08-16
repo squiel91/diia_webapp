@@ -18,21 +18,21 @@
 					if (!this.rendered && this.dataGraph) {
 						this.renderGraph()
 						this.rendered = true
-					}
-					if (this.rendered) {
-						console.log(this.filter)
-
-						this.apply_filters()
-						this.apply_visualization(this.filter.metric)
-						if (this.rearange) {
-							this.rearanged = true
-							var thisScoped = this
-							setTimeout(function() {
-								thisScoped.startGravity()
-							}, 0)
-						} else {
-							if (this.rearanged) {
-								this.stopGravity()
+					} else {
+						if (this.rendered && this.graph) {
+							this.apply_filters()
+							this.graph.refresh()
+							this.apply_visualization()
+							if (this.rearange) {
+								this.rearanged = true
+								var self = this
+								setTimeout(function() {
+									self.startGravity()
+								}, 0)
+							} else {
+								if (this.rearanged) {
+									this.stopGravity()
+								}
 							}
 						}
 					}
@@ -41,38 +41,56 @@
 			}
 		},
 		methods: {
+			reset() {
+				if (this.graph) {
+					if (this.graph.graph) this.graph.graph.clear()
+					this.graph.refresh()
+					this.graph.graph.kill()
+				}
+				this.rendered = false
+				this.nodes = undefined
+				this.edges = undefined
+				this.filters = undefined
+				this.combined_edges = undefined
+				this.drag = undefined
+				this.graph = undefined
+				this.rearanged = false
+			},
 			scale(min, max, val) {
 				let maxSize = 16
 				let minSize = 4
 				let scaleVal = minSize + [(Math.abs(val)-min)/(max-min)]*(maxSize-minSize)
-				console.log(scaleVal)
 				return scaleVal
 			},
-			apply_visualization(vizualizationInfo) {
-				if (vizualizationInfo && this.lastVisualization != vizualizationInfo.querry) {
-					this.$http.get(`http://179.27.71.27/${vizualizationInfo.querry}`)
-					.then(
-						data => {
-							let max = Math.abs(parseFloat(data.body.valorMaximo))
-							let min = Math.abs(parseFloat(data.body.valorMinimo))
-							let values = data.body.metricas
-							for (var [nodeId, value] of Object.entries(values)) {
-								this.graph.graph.nodes(nodeId).size = this.scale(min, max, value)
-							}
-							this.lastVisualization = vizualizationInfo.querry
-							this.graph.refresh()
-						}, error => {
-							console.log('Error at retrieving metric:')
-							console.log(error)
-						}	
-					)
-				} else {
-					if (this.lastVisualization) {
-					    for (var node of this.graph.graph.nodes()) {
-					        node.size = this.DEFAULT_SIZE
-					    }
-					    this.graph.refresh()
-						this.lastVisualization = undefined
+			apply_visualization() {
+				// revise
+				if (this.filter) {
+					let vizualizationInfo = this.filter.metric
+					if (vizualizationInfo && this.lastVisualization != vizualizationInfo.querry) {
+						this.$http.get(`http://179.27.71.27/${vizualizationInfo.querry}`)
+						.then(
+							data => {
+								let max = Math.abs(parseFloat(data.body.valorMaximo))
+								let min = Math.abs(parseFloat(data.body.valorMinimo))
+								let values = data.body.metricas
+								for (var [nodeId, value] of Object.entries(values)) {
+									this.graph.graph.nodes(nodeId).size = this.scale(min, max, value)
+								}
+								this.lastVisualization = vizualizationInfo.querry
+								this.graph.refresh()
+							}, error => {
+								console.log('Error at retrieving metric:')
+								console.log(error)
+							}	
+						)
+					} else {
+						if (this.lastVisualization) {
+						    for (var node of this.graph.graph.nodes()) {
+						        node.size = this.DEFAULT_SIZE
+						    }
+						    this.graph.refresh()
+							this.lastVisualization = undefined
+						}
 					}
 				}
 			},
@@ -121,8 +139,6 @@
 				this.graph.killForceAtlas2()
 			},
 			combine(filter) {
-				var t0 = performance.now();
-
 				if (this.edges) {
 					this.combined_edges_index = {}
 					for (var interaction of this.edges) {
@@ -192,8 +208,6 @@
 					}
 				}
 				this.dataGraphIndex.combined_edges_index = this.combined_edges_index
-				var t1 = performance.now();
-				console.log(`Combine END: ${t1 - t0} milliseconds.`)
 				return this.combined_edges
 			},
 			renderGraph() {
@@ -270,19 +284,27 @@
 					return renderer;
 				})();
 
+				var typePos = {
+					'm': { x: 0.7, y: 0.7},
+					'e': { x: -0.7, y: -0.7},
+					'd': { x: 0, y: 0},
+					'a': { x: 0.7, y: -0.7}
+				}
+
 				for (var node of this.nodes) {
 					g.nodes.push({
 						id: node.id,
 						label: node.nombre.length <= 10? node.nombre : node.nombre.substring(0,11) + '...',
 						type: 'image',
 						url: node_images[node.tipo],
-						x: Math.random(),
-						y: Math.random(),
+						x: typePos[node.tipo].x + (node.tipo != 'd'? Math.random(): 0),
+						y: typePos[node.tipo].y + (node.tipo != 'd'? Math.random(): 0),
 						size: this.DEFAULT_SIZE
 					})
 				}
 
-				g.edges = this.combine()
+				let combined = 
+				g.edges = this.combine(this.filter)
 
 				var forceAtlasConf = {
 					slowDown: 1000000000, 
@@ -295,7 +317,6 @@
 					startingIterations: 0
 				}
 
-				// Instantiate sigma:
 				var s = new sigma({
 					renderer: {
 						container: this.$refs.graph,
@@ -316,14 +337,19 @@
 					}
 				})
 
+				this.filters = new sigma.plugins.filter(s)
 				this.graph = s
+
+				this.apply_filters(g.edges)
+				this.apply_visualization()
 
 				var justDragged = false
 
-				var vueInstance = this
+				var self = this
+
 				s.startForceAtlas2(forceAtlasConf)
 					.bind('overNode', function(e) {
-							vueInstance.$emit('focused', {
+							self.$emit('focused', {
 								id: e.data.node.id,
 								isNode: true
 							})
@@ -331,7 +357,7 @@
 					)
 					.bind('clickNode', function(e) {
 						if (!justDragged) {
-							vueInstance.$emit('clicked',  {
+							self.$emit('clicked',  {
 								id: e.data.node.id,
 								isNode: true
 							})
@@ -340,7 +366,7 @@
 						}
 					})
 					.bind('overEdge', function(e) {
-							vueInstance.$emit('focused', {
+							self.$emit('focused', {
 								id: e.data.edge.id,
 								isNode: false
 							})
@@ -348,7 +374,7 @@
 					)					
 					.bind('clickEdge', function(e) {
 						justDragged  = false
-						vueInstance.$emit('clicked', {
+						self.$emit('clicked', {
 							id: e.data.edge.id,
 							isNode: false
 						})
@@ -369,7 +395,7 @@
 
 				s.startForceAtlas2(forceAtlasConf)
 					.bind('overNode', function(e) {
-							vueInstance.$emit('focused', {
+							self.$emit('focused', {
 								id: e.data.node.id,
 								isNode: true
 							})
@@ -387,25 +413,25 @@
 					}
 					iterations -= 1
 				}, 1000)
-				this.filters = new sigma.plugins.filter(s)
 			},
-			apply_filters() {
-				var thisVue = this
-				if (this.filter) {
+			apply_filters(combined) {
+				var self = this
+				if (this.filter && this.filters) {
 					if (this.filter.nodes) {
 						this.filters.undo('node')
 							.nodesBy(function(n) {
-								let tipoNodo = thisVue.dataGraphIndex.nodes[n.id].tipo
-								return thisVue.filter.nodes && thisVue.filter.nodes[tipoNodo] 
-									&& (Object.keys(thisVue.filter.individualNodes).length == 0 || thisVue.filter.individualNodes[tipoNodo][n.id].selected)
+								let tipoNodo = self.dataGraphIndex.nodes[n.id].tipo
+								return self.filter.nodes && self.filter.nodes[tipoNodo] 
+									&& (!self.filter.individualNodes || Object.keys(self.filter.individualNodes).length == 0 || self.filter.individualNodes[tipoNodo][n.id].selected)
 						}, 'node')
 						.apply()
 					}
 
-					this.graph.graph.edges().map(a => this.graph.graph.dropEdge(a.id))
-					this.combine(this.filter).map(a => this.graph.graph.addEdge(a))
-
-					this.graph.refresh()
+					if (!combined) {
+						combined = this.combine(this.filter)
+						this.graph.graph.edges().map(a => this.graph.graph.dropEdge(a.id))
+						combined.map(a => this.graph.graph.addEdge(a))
+					}
 				}
 			}
 		},

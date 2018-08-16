@@ -8,7 +8,6 @@
 		<v-chip><v-avatar><v-icon>link</v-icon></v-avatar><a :href="uri" target="_blank">{{ uri }}</a></v-chip>
 		<div><v-chip><v-avatar><v-icon>visibility</v-icon></v-avatar>Cantidad de accesos: {{ accessQty }}</v-chip></div>
 		<div><v-chip><v-avatar><v-icon>event</v-icon></v-avatar>Publicado el {{ publishedDate | formatDate }}</v-chip></div>
-		<!-- <div>Tipo: {{ type }}</div> -->
 	</div>
 </template>
 
@@ -82,16 +81,6 @@ export default {
 				if (this.id && this.id != this.fetchedId) {
 					this.$http.get(`http://179.27.71.27/material/${this.id}`)
 						.then(data => {
-							// {
-							// 	"idCurso":1,
-							// 	"plataforma":"m",
-							// 	"nombre":"Intro Lenguajes y AutÃ³matas 1",
-							// 	"tipo":"ri",
-							// 	"tipoContenido":"gif",
-							// 	"fechaPublicacion":1522638000000,
-							// 	"numeroAccesos":176,
-							// 	"urlUbicacion":"www.lola-lemus.com"
-							// }
 							let material = data.body
 							this.fetchedId = this.id
 							this.$emit('loaded')
@@ -127,7 +116,9 @@ export default {
 		display: inline-block;
 		padding: 7pt;
 		width: 110pt;
-		margin-right: 10pt
+	    height: 140pt;
+	    overflow: hidden;
+		margin-right: 10pt;
 	}
 
 	.grid {
