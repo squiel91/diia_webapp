@@ -7,7 +7,6 @@
 			</v-btn>
 				<v-toolbar-title>
 					<div class="titleContainer">
-						
 						<v-progress-circular v-if="loading" class="loading" indeterminate :size="30" color="white"></v-progress-circular>
 					</div>
 			</v-toolbar-title>
@@ -28,7 +27,7 @@
 					</div>
 				</div>
 				<div v-if="info && !info.isNode">
-					<interaction v-for="detailedEdge in interactions" :interaction="detailedEdge" :index="index"></interaction>
+					<interaction v-for="detailedEdge in interactions" :key="detailedEdge.id_interaccion" :interaction="detailedEdge" :index="index"></interaction>
 				</div>	
 			</div class="dialogContent">
 		</v-card>

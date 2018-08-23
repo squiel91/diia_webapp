@@ -55,6 +55,8 @@
 		width: 110pt;
 		border-radius: 5pt;
 		color: gray;
+		cursor: pointer;
+
 	}
 
 	.selected {

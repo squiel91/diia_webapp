@@ -24,7 +24,7 @@
 			</v-card-text>
 			<v-card-actions>
 				<v-btn color="primary" flat @click="$emit('close')">Cancelar</v-btn>
-				<v-btn color="primary" dark @click="$emit('change')">Aceptar</v-btn>
+				<v-btn color="primary" dark @click="accept()">Aceptar</v-btn>
 			</v-card-actions>
 		</v-card>
 	</v-dialog>
@@ -35,25 +35,33 @@
 		props: ['elements', 'selection'],
 		data() {
 			return {
-				newSelection: {}
+				newSelection: {},
+				elementSelection: []
 			}
 		},
 		computed: {
 			modal: {
 				get() {
-					return this.selection != "" && 'a|e|m'.indexOf(this.selection) >= 0 
+					// debugger
+					if(this.selection != "" && 'a|e|m'.indexOf(this.selection) >= 0) {
+						this.elementSelection = this.selection? this.elements[this.selection] : []
+						return true
+					} else {
+						return false
+					}
 				},
 				set(value) {
 					if (!value) {
 						this.$emit('close')
 					}
 				}
-			},
-			elementSelection() {
-				return this.selection? this.elements[this.selection] : []
 			}
 		},
 		methods: {
+			accept() {
+				this.$emit('change')
+				this.$emit(this.selection)
+			},
 			batchChange(value) {
 				var self = this
 				Object.keys(this.elementSelection).forEach(element_key => {

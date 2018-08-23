@@ -4,15 +4,41 @@
 		:selection="individualSelectionModal"
 		:elements="nodeIndex"
 		@close="individualSelectionModal = ''"
-		@change="individualSelectionModal = '' ||  emit()">
+		@change="individualSelectionModal = '' ||  emit()"
+		@a="(personalizedSelectionActividad = true) && actividadSelection(true, true)"
+		@e="(personalizedSelectionEstudiante = true) && estudianteSelection(true, true)"
+		@m="(personalizedSelectionRecurso = true) && recursoSelection(true, true)">
 		</individualSelection>
 		<table>
 			<tr>
-				<td></td>
+				<td>
+					<div class="help">
+						<img src="img/touch.png">
+					</div>
+				</td>
 				<td></td>					
-				<td @click="clickActividad()" :class="{selected: actividad}" class="entity actividad">
-					<img src="img/actividad.png">
-					<div class="label">Actividad</div>
+				<td @click="initialize() || (menuActividades != menuActividades)" :class="{selected: actividad}" class="entity actividad">
+					<v-menu
+				      v-model="menuActividades"
+				      absolute
+				      offset-y
+				      style="max-width: 600px"
+				    >
+				    <div slot="activator">
+						<img src="img/actividad.png">
+						<div class="label">Actividad</div>
+						<img class="funnel" v-if="personalizedSelectionActividad" src="img/funnel.png">
+					</div>
+					<v-list>
+				        <v-list-tile
+				          v-for="(item, index) in listItems"
+				          :key="index"
+				          @click="valueActividades = index"
+				        >
+				          <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+				        </v-list-tile>
+				      </v-list>
+				    </v-menu>
 				</td>
 				<td></td>
 			</tr>
@@ -28,9 +54,28 @@
 					<div class="label">Docente</div>
 				</td>
 				<td @click="clickDocenteEstudiante()" :class="{selected: docenteEstudiante}" class="interaction"><div class="horizontal"></div></td>					
-				<td @click="clickEstudiante()" :class="{selected: estudiante}" class="entity estudiante">
-					<img src="img/estudiante.png">
-					<div class="label">Estudiante</div>
+				<td @click="initialize() || (menuEstudiantes != menuEstudiantes)" :class="{selected: estudiante}" class="entity estudiante">
+					<v-menu
+				      v-model="menuEstudiantes"
+				      absolute
+				      offset-y
+				      style="max-width: 600px"
+				    >
+				    <div slot="activator">
+						<img src="img/estudiante.png">
+						<div class="label">Estudiante</div>
+						<img class="funnel" v-if="personalizedSelectionEstudiante" src="img/funnel.png">
+					</div>
+					<v-list>
+				        <v-list-tile
+				          v-for="(item, index) in listItems"
+				          :key="index"
+				          @click="valueEstudiantes = index"
+				        >
+				          <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+				        </v-list-tile>
+				      </v-list>
+				    </v-menu>
 				</td>
 				<td @click="clickEstudianteEstudiante()" :class="{selected: estudianteEstudiante}" class="interaction"><div class="loop"></div></td>
 			</tr>
@@ -43,25 +88,32 @@
 			<tr>
 				<td></td>
 				<td></td>					
-				<td @click="clickRecurso()" :class="{selected: recurso}" class="entity recurso">
-					<img src="img/recurso.svg">
-					<div class="label">Recurso</div>
+				<td @click="initialize() || (menuRecursos != menuRecursos)" :class="{selected: recurso}" class="entity recurso">
+					<v-menu
+				      v-model="menuRecursos"
+				      absolute
+				      offset-y
+				      style="max-width: 600px"
+				    >
+				    <div slot="activator">
+						<img src="img/recurso.svg">
+						<div class="label">Recurso</div>
+						<img class="funnel" v-if="personalizedSelectionRecurso" src="img/funnel.png">
+					</div>
+					<v-list>
+				        <v-list-tile
+				          v-for="(item, index) in listItems"
+				          :key="index"
+				          @click="valueRecursos = index"
+				        >
+				          <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+				        </v-list-tile>
+				      </v-list>
+				    </v-menu>
 				</td>
 				<td></td>
 			</tr>
 		</table>
-		<div class="help" ref="help">
-			<transition name="fade">
-				<div v-if="first" class="help-message">
-					<img src="img/touch.png"><p>Selecciona nodos e interacciones que quieras ver</p>
-				</div>
-			</transition>
-			<transition name="fade">
-				<div v-if="second" class="help-message">
-					<img src="img/doubletouch.png"><p>Doble click en el nodo para seleccionar un subconjunto</p>
-				</div>
-			</transition>
-		</div>
 	</div>
 </template>
 
@@ -82,23 +134,77 @@
 				estudianteRecurso: true,
 				estudianteActividad: true,
 				estudianteEstudiante: true,
-				clicksDocente: 0,
-				clicksEstudiante: 0,
-				clicksRecurso: 0,
-				clicksActividad: 0,
-				timer: undefined,
-				delay: 500, // ms
-				first: true,
-				second: false,
 
+				valueEstudiantes: undefined,
+				valueRecursos: undefined,
+				valueActividades: undefined,
+
+				personalizedSelectionActividad: false,
+				personalizedSelectionEstudiante: false,
+				personalizedSelectionRecurso: false,
+
+				menuEstudiantes: false,
+				menuRecursos: false,
+				menuActividades: false,
+
+				listItems: [
+			        { title: 'Seleccionar todos' },
+			        { title: 'No selecionar ninguno' },
+			        { title: 'Seleccion personalizada' }
+			      ],
+				
 				nodeIndex: undefined,
 				individualSelectionModal: ''
+			}
+		},
+		watch: {
+			valueEstudiantes(newValue) {
+				if (newValue <= 1) this.personalizedSelectionEstudiante = false
+				if(newValue == 0) {
+					this.estudianteSelection(true)
+				}
+				if(newValue == 1) {
+					this.estudianteSelection(false)
+				}
+				if(newValue == 2) {
+					this.individualSelectionModal = 'e'
+				}
+				this.valueEstudiantes = undefined
+			},
+			valueRecursos(newValue) {
+				if (newValue <= 1) this.personalizedSelectionRecurso = false
+				if(newValue == 0) {
+					this.recursoSelection(true)
+				}
+				if(newValue == 1) {
+					this.recursoSelection(false)
+				}
+				if(newValue == 2) {
+					this.individualSelectionModal = 'm'
+				}
+				this.valueEstudiantes = undefined
+			},
+			valueActividades(newValue) {
+				if (newValue <= 1) this.personalizedSelectionActividad = false
+				if(newValue == 0) {
+					this.actividadSelection(true)
+				}
+				if(newValue == 1) {
+					this.actividadSelection(false)
+				}
+				if(newValue == 2) {
+					this.individualSelectionModal = 'a'
+				}
+				this.valueEstudiantes = undefined
 			}
 		},
 		components: {
 			individualSelection: IndividualSelection
 		},
 		computed: {
+			filterApliedEstudiantes() {
+				return this.nodeIndex && this.nodeIndex.e && !Object.values(this.nodeIndex.e).every(a => a.selected)
+			},
 			interactionNodeTypes() {
 				return {
 					'de': this.docenteEstudiante,
@@ -121,22 +227,6 @@
 		},
 		created() {
 			this.emit()
-		},
-		mounted() {
-			var self = this
-			setInterval(function() {
-				if (self.first) {
-					self.first = false
-					setTimeout(function() {
-						self.second = true
-					},500)
-				} else {
-					self.second = false
-					setTimeout(function() {
-						self.first = true
-					},500)
-				}
-			}, 5000)
 		},
 		methods: {
 			initialize() {
@@ -161,53 +251,13 @@
 				this.$emit('change', {
 					interactionTypes: this.interactionNodeTypes,
 					nodeTypes: this.nodeTypes,
-					individualNodes: Object.assign({}, this.nodeIndex)
+					individualNodes: {
+						'd': null,
+						'e': this.personalizedSelectionEstudiante? Object.assign({}, this.nodeIndex.e) : null,
+						'm': this.personalizedSelectionRecurso? Object.assign({}, this.nodeIndex.m) : null,
+						'a': this.personalizedSelectionActividad? Object.assign({}, this.nodeIndex.a) : null
+					}
 				})
-			},
-			clickEstudiante(){
-				this.initialize()
-				this.clicksEstudiante++
-				if(this.clicksEstudiante === 1) {
-					var self = this
-					this.timer = setTimeout(function() {
-						self.clicksEstudiante = 0
-						self.singleClickEstudiante()
-					}, this.delay);
-				} else{
-					clearTimeout(this.timer)
-					this.doubleClickEstudiante()
-					this.clicksEstudiante = 0
-				}         
-			},
-			clickRecurso(){
-				this.initialize()
-				this.clicksRecurso++
-				if(this.clicksRecurso === 1) {
-					var self = this
-					this.timer = setTimeout(function() {
-						self.clicksRecurso = 0
-						self.singleClickRecurso()
-					}, this.delay);
-				} else{
-					clearTimeout(this.timer)
-					this.doubleClickRecurso()
-					this.clicksRecurso = 0
-				}         
-			},
-			clickActividad(){
-				this.initialize()
-				this.clicksActividad++
-				if(this.clicksActividad === 1) {
-					var self = this
-					this.timer = setTimeout(function() {
-						self.clicksActividad = 0
-						self.singleClickActividad()
-					}, this.delay);
-				} else{
-					clearTimeout(this.timer)
-					this.doubleClickActividad()
-					this.clicksActividad = 0
-				}         
 			},
 			clickDocente() {
 				if (this.docente) {
@@ -223,63 +273,54 @@
 				}
 				this.emit()
 			},
-			singleClickEstudiante() {
-				if (this.estudiante) {
-					this.estudianteActividad = false
-					this.estudianteRecurso =false
-					this.estudianteEstudiante = false
-					this.docenteEstudiante = false
-					this.estudiante=false
-				} else {
+			estudianteSelection(selected, dontRemovePersonalized) {
+				if (selected) {
 					if (this.actividad) this.estudianteActividad = true
 					if (this.recurso) this.estudianteRecurso =true
 					this.estudianteEstudiante = true
 					if (this.docente) this.docenteEstudiante = true
 					this.estudiante=true
+				} else {
+					this.estudianteActividad = false
+					this.estudianteRecurso =false
+					this.estudianteEstudiante = false
+					this.docenteEstudiante = false
+					this.estudiante=false
+				}
+				if (!dontRemovePersonalized) {
+					this.personalizedSelectionEstudiante = false
 				}
 				this.emit()
 			},
-			singleClickRecurso() {
-				if (this.recurso) {
-					this.docenteRecurso = false
-					this.estudianteRecurso = false
-					this.recurso = false
-				} else {
+			recursoSelection(selected, dontRemovePersonalized) {
+				if (selected) {
 					if (this.docente) this.docenteRecurso = true
 					if (this.estudiante) this.estudianteRecurso = true
 					this.recurso = true
+				} else {
+					this.docenteRecurso = false
+					this.estudianteRecurso = false
+					this.recurso = false
+				}
+				if (!dontRemovePersonalized) {
+					this.personalizedSelectionRecurso = false
 				}
 				this.emit()
 			},
-			singleClickActividad() {
-				if (this.actividad) {
-					this.docenteActividad = false
-					this.estudianteActividad = false
-					this.actividad=false
-				} else {
+			actividadSelection(selected, dontRemovePersonalized) {
+				if (selected) {
 					if (this.docente) this.docenteActividad = true
 					if (this.estudiante) this.estudianteActividad = true
 					this.actividad = true
+				} else {
+					this.docenteActividad = false
+					this.estudianteActividad = false
+					this.actividad=false
+				}
+				if (!dontRemovePersonalized) {
+					this.personalizedSelectionActividad = false
 				}
 				this.emit()
-			},
-			doubleClickEstudiante() {
-				if (!this.estudiante) this.singleClickEstudiante()
-				this.emit()
-				this.individualSelectionModal = 'e' 
-				this.$emit('selectEstudiante')
-			},
-			doubleClickRecurso() {
-				if (!this.recurso) this.singleClickRecurso()
-				this.emit()
-				this.individualSelectionModal = 'm'
-				this.$emit('selectRecurso')
-			},
-			doubleClickActividad() {
-				if (!this.actividad) this.singleClickActividad()
-				this.emit()
-				this.individualSelectionModal = 'a'
-				this.$emit('selectActividad')
 			},
 			clickDocenteActividad() {
 				if (this.docenteActividad) {
@@ -359,9 +400,15 @@
 	}
 
 	.help {
-		width: 100%;
+		width: 100pt;
 		height: 50pt;
-		margin-top: 10pt
+	}
+
+	.funnel {
+		width: 18pt;
+	    position: absolute;
+	    top: -3pt;
+	    left: 22pt;
 	}
 
 	.fade-enter-active, .fade-leave-active {
@@ -382,16 +429,18 @@
 	.entity {
 		border: 2pt solid transparent;
 		border-radius: 5pt;
+		cursor: pointer;
 	}
 
 	.interaction {
-
+		cursor: pointer;
 	}
 
 	.label {
 		text-align: center;
 		font-size: small;
 		color: gray;
+		width: 52pt;
 	}
 
 	.selected .label {
@@ -494,14 +543,14 @@
 
 	.help img {
 		display: inline-block;
-		width: 30pt;
+		width: 50pt;
 		margin-right: 5pt;
 	}
 
 	.help p {
 		margin-bottom: 16px;
 		display: inline-block;
-		width: 200px;
+		width: 70px;
 		color: gray;
 		font-size: small;
 	}

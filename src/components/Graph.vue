@@ -425,8 +425,8 @@
 						this.filters.undo('node')
 							.nodesBy(function(n) {
 								let tipoNodo = self.dataGraphIndex.nodes[n.id].tipo
-								return self.filter.nodes && self.filter.nodes[tipoNodo] 
-									&& (!self.filter.individualNodes || Object.keys(self.filter.individualNodes).length == 0 || self.filter.individualNodes[tipoNodo][n.id].selected)
+								return (self.filter.nodes && self.filter.nodes[tipoNodo]) 
+									&& (!self.filter.individualNodes[tipoNodo] || Object.keys(self.filter.individualNodes).length == 0 || self.filter.individualNodes[tipoNodo][n.id].selected)
 						}, 'node')
 						.apply()
 					}

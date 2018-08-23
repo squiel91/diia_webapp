@@ -1,6 +1,6 @@
 <template>
 	<div class="details">
-		<div v-if="focused==undefined" class="empty">
+		<div v-if="!focused" class="empty">
 			<v-chip><v-avatar style="background-color: white;"><v-icon>help</v-icon></v-avatar>Seleccione un nodo o una interraccion para ver mas detalles</v-chip>
 		</div>
 		<div v-if="focused && focused.isNode" class="alumno">

@@ -73,6 +73,31 @@ export default {
 		},
 		filters: {
 			formatDate(date) {
+				var days_name = {
+					'0': 'Lunes',
+					'1': 'Martes',
+					'2': 'Miercoles',
+					'3': 'Jueves',
+					'4': 'Viernes',
+					'5': 'Sabado',
+					'6': 'Domingo'
+				}
+				var months_name = {
+					'0': 'Enero',
+					'1': 'Febrero',
+					'2': 'Marzo',
+					'3': 'Abril',
+					'4': 'Mayo',
+					'5': 'Junio',
+					'6': 'Julio',
+					'7': 'Agosto',
+					'8': 'Septiembre',
+					'9': 'Octubre',
+					'10': 'Noviembre',
+					'11': 'Diciembre'
+				}
+				var d = new Date(date)
+				return `${days_name[d.getDay()]} ${d.getDate()} ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
 				return date
 			}
 		},

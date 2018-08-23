@@ -7,9 +7,21 @@
 	            <h3 class="headline mb-0">{{ tipo_string }}</h3>
 	            <div>
 					<div style="font-style: italic; color: gray;">{{ date_string }}</div>
-					De <v-chip>{{ origen_string }}</v-chip> hacia <v-chip>{{ destino_string }}</v-chip> con <span style="font-weight: bold;" :style="{color: color_string}">polaridad {{ polaridad_string }}</span></span>.
+					De <v-chip>{{ origen_string }}</v-chip> hacia <v-chip>{{ destino_string }}</v-chip> <span v-if="interaction.polaridad">con <span style="font-weight: bold;" :style="{color: color_string}">polaridad {{ polaridad_string }}</span></span>.
 	            </div>
 	          </div>
+	          	<v-spacer></v-spacer>
+	        	<v-btn icon @click="extraInfo = !extraInfo">
+            		<v-icon>{{ extraInfo ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}</v-icon>
+          		</v-btn>
+          		<v-slide-y-transition>
+		          <div class="extraInfo" v-if="extraInfo">
+		          	<v-progress-linear v-if="!allInfo" :indeterminate="true"></v-progress-linear>
+		            <div v-if="allInfo">
+		            	<div>{{ contentTypeName }}: {{ interaction.tipo == 'rea'? reactionName : content }}</div>
+			        </div>
+		          </div>
+		        </v-slide-y-transition>
 	        </v-card-title>
 	      </v-card>
 		</li>
@@ -20,9 +32,56 @@
 	export default {
 		props: ['interaction', 'index'],
 		data() {
-			return {}
+			return {
+				extraInfo: false,
+				allInfo: undefined,
+				contentType: undefined,
+				content: undefined
+			}
 		},
+		methods: {
+			fetchData() {
+				if (!this.allInfo) {
+					this.$http.get(`http://179.27.71.27/consulta/interaccion/${this.interaction.id_interaccion}`) 
+					.then(data => {
+						this.allInfo = data.body
+						this.contentType = this.allInfo.tipoContenido
+						this.content = this.allInfo.contenido 
+					}, error => {
+						console.log(error)
+					})
+				}
+			}
+		},
+		watch: {
+			extraInfo(newVal) {
+				if(newVal) this.fetchData()
+			}
+		},
+
 		computed: {
+			contentTypeName() {
+				return {
+					vid: 'video',
+					img: 'imagen',
+					tex: 'texto',
+					gif: 'GIF animado',
+					des: 'Desconocido',
+					lik: 'Enlace'
+				}[this.contentType]
+			},
+			reactionName() {
+				return {
+					NONE: 'Ninguna',
+					LIKE: 'Gusta',
+					LOVE: 'Amoroso',
+					WOW: 'Asombro',
+					HAHA: 'Gracioso',
+					SAD: 'Tristeza',
+					ANGRY: 'Enojo',
+					THANKFUL: 'Agradecido'
+				}[this.content]
+			},
 			tipo_string() {
 				let tipo_name = {
 					vis: 'Visto',
@@ -90,6 +149,12 @@
 </script>
 
 <style scoped>
+	.extraInfo {
+		clear: both;
+		padding-top: 16pt;
+		width: 100%;
+	}
+
 	ul {
 		list-style-type: none;
 		margin-top: 10pt;

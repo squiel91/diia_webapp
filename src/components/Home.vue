@@ -125,6 +125,7 @@
 				handler() {
 					if (this.filterConditions.course != this.fetchedCourse) {
 						this.fetchedCourse = this.filterConditions.course
+						this.focused = undefined 
 						this.dataGraph = undefined
 						this.$refs.nodedetailed.reset()
 						this.$refs.graph.reset()
