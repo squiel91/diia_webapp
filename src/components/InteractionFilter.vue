@@ -1,11 +1,11 @@
 <template>
 	<ul class="interactionFilter">
-		<li @click="click('pub')" :class="{selected: interactionTypes.pub}"><v-icon>import_contacts</v-icon><span class="label">Publicacion</span></li>
+		<li @click="click('pub')" :class="{selected: interactionTypes.pub}"><v-icon>import_contacts</v-icon><span class="label">Publicación</span></li>
 		<li @click="click('com')" :class="{selected: interactionTypes.com}"><v-icon>message</v-icon><span class="label">Comentario</span></li>
 		<li @click="click('vis')" :class="{selected: interactionTypes.vis}"><v-icon>done</v-icon><span class="label">Visto</span></li>
 		<li @click="click('msj')" :class="{selected: interactionTypes.msj}"><v-icon>forum</v-icon><span class="label">Mensaje</span></li>
-		<li @click="click('rea')" :class="{selected: interactionTypes.rea}"><v-icon>thumbs_up_down</v-icon><span class="label">Reaccion</span></li>
-		<li @click="click('men')" :class="{selected: interactionTypes.men}"><v-icon>person_add</v-icon><span class="label">Mencion</span></li>
+		<li @click="click('rea')" :class="{selected: interactionTypes.rea}"><v-icon>thumbs_up_down</v-icon><span class="label">Reacción</span></li>
+		<li @click="click('men')" :class="{selected: interactionTypes.men}"><v-icon>person_add</v-icon><span class="label">Mención</span></li>
 	</ul>
 </template>
 

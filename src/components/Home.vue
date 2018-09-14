@@ -1,28 +1,53 @@
 <template>
 	<v-app>
 		<v-navigation-drawer
-			:width="360"
+			:width="374"
       		fixed
       		v-model="drawer"
       		right
-      		app
       		clipped
+      		app
 			:mobile-break-point="500"
-			style="z-index: 200;"
+			style="z-index: 200; width: 390px"
 			class="pa-0"
     	>
-			<filters class="ma-3" ref="filter" @filter="changeFilter($event)" 
-			:courses="courses? courses : []" :index="dataGraphIndex"
+    		<div class="absoluteFilter" @click.stop="(drawer = !drawer) && (rearange = false)"><div class="textFilter">{{drawer? '&gt;':'&lt;'}}<br><br>F<br>I<br>L<br>T<br>R<br>O<br>S<br><br>{{drawer? '&gt;':'&lt;'}}</div></div>
+			<filters 
+			 style="padding-left: 14px" 
+			 class="ma-3"
+			 ref="filter" 
+			 :course="course" 
+			 :index="dataGraphIndex"
+			 @individualSelection="individualSelection($event)"
+			 @filter="changeFilter($event)" 
 			></filters>
 		</v-navigation-drawer>
+		<v-navigation-drawer
+			:width="424"
+      		fixed
+      		v-model="analisisDrawer"
+      		left
+      		app
+			:mobile-break-point="500"
+			style="z-index: 200; width: 440px"
+			class="pa-0"
+			:class="{closed: !analisisDrawer}"
+    	>
+    		<div :class="{open: analisisDrawer}" class="analisisToggle" @click.stop="(analisisDrawer = !analisisDrawer)"><div class="textFilter">{{!analisisDrawer? '&gt;':'&lt;'}}<br><br>E<br>S<br>T<br>A<br>D<br>Í<br>S<br>T<br>I<br>C<br>A<br>S<br><br>{{!analisisDrawer? '&gt;':'&lt;'}}</div></div>
+			<analisis 
+			 :filter="filterConditions"
+			 :nodeNumbers="nodeNumbers"
+			 :course="course"
+			/>
+		</v-navigation-drawer>
 		<v-toolbar color="primary" dark fixed app clipped-right>
-			<mainheader :courses="dataGraph? dataGraph.courses : []"></mainheader>
+			<mainheader :courses="courses? courses : []" @change="course = $event"></mainheader>
 		</v-toolbar>
 		<v-content>
       		<v-container fluid fill-height>
 				<v-btn
 				:key="activeFab"
-				class="mb-5 ml-5"
+				class="mb-5 ml-4"
 				fab
 				fixed
 				bottom
@@ -30,20 +55,6 @@
 				@click.stop="rearange = !rearange">
     			<v-icon>{{ rearangeFab }}</v-icon>
 				</v-btn>
-				<v-fab-transition>
-				  <v-btn
-					dark
-					color="primary"
-					:key="activeFab"
-					class="mb-5 ml-1"
-					fab
-					fixed
-					bottom
-					left
-					@click.stop="(drawer = !drawer) && (rearange = false)">
-        			<v-icon>{{ activeFab }}</v-icon>
-					</v-btn>
-				</v-fab-transition>
 				<nodedetailed ref="nodedetailed" :info="clicked" :curso="filterConditions && filterConditions.course" :index="dataGraphIndex"></nodedetailed>
 				<graph
 				ref="graph"
@@ -51,12 +62,13 @@
 				:dataGraphIndex="dataGraphIndex"
 				:rearange="rearange"
 				:filter="filterConditions"
+				@nodeNumbers="nodeNumbers=$event"
 				@focused="focused = $event"
 				@clicked="clicked = $event"
 				@loadingLess="loadingLess()"
 				@loadingMore="loadingMore()"
 				></graph>
-				<detailed :focused="focused"
+				<detailed class="ml-4" :focused="focused"
 				:dataGraphIndex="dataGraphIndex"></detailed>
       		</v-container>
    		</v-content>
@@ -69,6 +81,7 @@
 	import Filters from './Filters.vue'
 	import Details from './Details.vue'
 	import NodeDetails from './NodeDetails.vue'
+	import Analisis from './Analisis.vue'
 
 	export default {
 		computed: {
@@ -85,6 +98,9 @@
 			}
 		},
 		methods: {
+			individualSelection(event) {
+				this.$refs.graph.individualSelection(event)
+			},
 			loadingLess() {
 				this.$refs.filter.loading(-1)
 			},
@@ -118,26 +134,27 @@
 			graph: Graph,
 			filters: Filters,
 			detailed: Details,
-			nodedetailed: NodeDetails
+			nodedetailed: NodeDetails,
+			analisis: Analisis
 		},
 		watch: {
-			filterConditions: {
-				handler() {
-					if (this.filterConditions.course != this.fetchedCourse) {
-						this.fetchedCourse = this.filterConditions.course
-						this.focused = undefined 
-						this.dataGraph = undefined
-						this.$refs.nodedetailed.reset()
-						this.$refs.graph.reset()
-						this.fetchData()
-					}
-				},
-				deep: true
+			course() {
+				if (this.course != this.fetchedCourse) {
+					this.fetchedCourse = this.course
+					this.focused = undefined 
+					this.dataGraph = undefined
+					this.$refs.nodedetailed.reset()
+					this.$refs.graph.reset()
+					this.$refs.filter.softReset()
+					this.fetchData()
+				}
 			}
 		},
 		data() {
 			return {
+				nodeNumbers: undefined,
 				courses: this.$store.state.courses,
+				course: undefined,
 				fetchedCourse: undefined,
 				clicked: undefined,
 				drawer: true,
@@ -149,7 +166,8 @@
 						edges: {}
 				},
 				filterConditions: {},
-				focused: undefined
+				focused: undefined,
+				analisisDrawer: false
 			}
 		}
 	}
@@ -158,5 +176,42 @@
 <style scoped>
 	button.wide {
 		width: 100%;
+	}
+
+	.absoluteFilter, .analisisToggle {
+		position: absolute;
+		top: 0pt;
+		width: 12pt;
+		height: 940pt;
+		background-color: #8e44ad;
+		color: white;
+		font-weight: bold;
+  		padding-top: 200pt;
+  		cursor: pointer;
+  		z-index: 250;
+	}
+
+	.analisisToggle {
+		height: 100%;
+		left: 424px;
+	}
+	.analisisDrawer {
+	    overflow:auto;
+	}
+
+	.absoluteFilter:hover, .analisisToggle:hover {
+		background-color: #81379f;
+	}
+
+	.textFilter {
+		text-align: center
+	}
+
+	.open {
+	    left: 410px !important;
+	}
+
+	.closed {
+		overflow-y: hidden;
 	}
 </style>

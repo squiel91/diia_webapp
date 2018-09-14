@@ -14,6 +14,7 @@ Vue.use(Vuetify, {
 		error: '#e74c3c'
 	}
 })
+
 Vue.use(VueResource)
 
 if (window.location.href.indexOf('localhost') >= 0) {
@@ -30,7 +31,7 @@ Vue.use(VueRouter)
 const routes = [
 	{path: '/', component: Login},
 	{path: '/home', component: Home},
-	{path: '/consentimiento', component: Consentimiento}
+	{path: '/consentimiento', component: Consentimiento},
 ] 
 const router = new VueRouter({
 	routes

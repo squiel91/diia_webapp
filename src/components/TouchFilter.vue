@@ -1,13 +1,13 @@
 <template>
 	<div class="container">
-		<individualSelection 
-		:selection="individualSelectionModal"
+		<individualSelection
+		:entity="individualSelectionModal"
 		:elements="nodeIndex"
 		@close="individualSelectionModal = ''"
 		@change="individualSelectionModal = '' ||  emit()"
-		@a="(personalizedSelectionActividad = true) && actividadSelection(true, true)"
-		@e="(personalizedSelectionEstudiante = true) && estudianteSelection(true, true)"
-		@m="(personalizedSelectionRecurso = true) && recursoSelection(true, true)">
+		@a="sendSelection('a')"
+		@e="sendSelection('e')"
+		@m="sendSelection('m')">
 		</individualSelection>
 		<table>
 			<tr>
@@ -182,7 +182,7 @@
 				if(newValue == 2) {
 					this.individualSelectionModal = 'm'
 				}
-				this.valueEstudiantes = undefined
+				this.valueRecursos = undefined
 			},
 			valueActividades(newValue) {
 				if (newValue <= 1) this.personalizedSelectionActividad = false
@@ -195,7 +195,7 @@
 				if(newValue == 2) {
 					this.individualSelectionModal = 'a'
 				}
-				this.valueEstudiantes = undefined
+				this.valueActividades = undefined
 			}
 		},
 		components: {
@@ -229,6 +229,34 @@
 			this.emit()
 		},
 		methods: {
+			softReset() {
+				this.nodeIndex = undefined
+				this.personalizedSelectionActividad = false
+				this.personalizedSelectionEstudiante = false
+				this.personalizedSelectionRecurso = false
+			},
+			sendSelection(entity) {
+				switch (entity) {
+					case 'a': {
+						this.personalizedSelectionActividad = true
+						this.actividadSelection(true, true)
+						break
+					}
+					case 'e': {
+						this.personalizedSelectionEstudiante = true
+						this.estudianteSelection(true, true)
+						break
+					}
+					case 'm': {
+						this.personalizedSelectionRecurso = true
+						this.recursoSelection(true, true)
+					}
+				}
+				this.$emit('individualSelection', {
+					entity: entity,
+					nodes: this.nodeIndex[entity]
+				})
+			},
 			initialize() {
 				if (!this.nodeIndex && this.nodes) {
 					var nodeIndex = {}

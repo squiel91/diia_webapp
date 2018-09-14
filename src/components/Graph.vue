@@ -1,7 +1,6 @@
 <template>
 	<div class="graph-container">
 		<div style="width:100%; text-align: center; color: gray" v-if="!dataGraph" class="loading">
-			<!-- <v-progress-linear :indeterminate="true" color="primary"></v-progress-linear> -->
 			<v-progress-circular class="mb-3" indeterminate :size="50" color="primary"></v-progress-circular>
 			<div ref="loadingMessage">Cargando datos de curso</div>
 		</div>
@@ -43,6 +42,20 @@
 			}
 		},
 		methods: {
+			individualSelection(value) {
+				let entity = value.entity
+				let showNodes = value.nodes
+				this.nodeNumbers[entity] = Object.values(showNodes).filter(a=>a.selected).length
+				let self = this
+				this.filters.undo(`mask${entity}`)
+					.nodesBy(function(n) {
+						let node = self.dataGraphIndex.nodes[n.id]
+						if (node.tipo != entity) return true
+						return showNodes[node.id].selected
+				}, `mask${entity}`)
+				.apply()
+				this.$emit('nodeNumbers', this.nodeNumbers)
+			},
 			reset() {
 				if (this.graph) {
 					if (this.graph.graph) this.graph.graph.clear()
@@ -65,7 +78,6 @@
 				return scaleVal
 			},
 			apply_visualization() {
-				// revise
 				if (this.filter) {
 					let vizualizationInfo = this.filter.metric
 					if (vizualizationInfo && this.lastVisualization != vizualizationInfo.querry) {
@@ -73,9 +85,9 @@
 						this.$http.get(`http://179.27.71.27/${vizualizationInfo.querry}`)
 						.then(
 							data => {
-								let max = Math.abs(parseFloat(data.body.valorMaximo))
-								let min = Math.abs(parseFloat(data.body.valorMinimo))
-								let values = data.body.metricas
+								let max = Math.abs(parseFloat(data.body.max))
+								let min = Math.abs(parseFloat(data.body.min))
+								let values = data.body.nodes
 								for (var [nodeId, value] of Object.entries(values)) {
 									this.graph.graph.nodes(nodeId).size = this.scale(min, max, value)
 								}
@@ -114,6 +126,11 @@
 						var currentInteraction = `${originType}${targetType}`
 						var reversedCurrentInteraction = `${targetType}${originType}`
 						if (!(filter.interactions[currentInteraction] || filter.interactions[reversedCurrentInteraction]))
+							return false
+					}
+
+					if (filter.platforms && interaction.plataforma) {
+						if (!filter.platforms[interaction.plataforma])
 							return false
 					}
 
@@ -295,7 +312,14 @@
 					'a': { x: 0.7, y: -0.7}
 				}
 
+				this.nodeNumbers = {
+					d: 0,
+					e: 0,
+					m: 0,
+					a: 0
+				}
 				for (var node of this.nodes) {
+					this.nodeNumbers[node.tipo] += 1
 					g.nodes.push({
 						id: node.id,
 						label: node.nombre.length <= 10? node.nombre : node.nombre.substring(0,11) + '...',
@@ -307,7 +331,8 @@
 					})
 				}
 
-				let combined = 
+				this.$emit('nodeNumbers', this.nodeNumbers)
+
 				g.edges = this.combine(this.filter)
 
 				var forceAtlasConf = {
@@ -344,8 +369,8 @@
 				this.filters = new sigma.plugins.filter(s)
 				this.graph = s
 
-				this.apply_filters(g.edges)
-				this.apply_visualization()
+				// this.apply_filters(g.edges)
+				// this.apply_visualization()
 
 				var justDragged = false
 
@@ -420,15 +445,28 @@
 			},
 			apply_filters(combined) {
 				var self = this
+				this.nodeNumbers = {
+					d: 0,
+					e: 0,
+					m: 0,
+					a: 0
+				}
 				if (this.filter && this.filters) {
 					if (this.filter.nodes) {
 						this.filters.undo('node')
 							.nodesBy(function(n) {
 								let tipoNodo = self.dataGraphIndex.nodes[n.id].tipo
-								return (self.filter.nodes && self.filter.nodes[tipoNodo]) 
-									&& (!self.filter.individualNodes[tipoNodo] || Object.keys(self.filter.individualNodes).length == 0 || self.filter.individualNodes[tipoNodo][n.id].selected)
+								let platform = self.dataGraphIndex.nodes[n.id].plat
+								if (platform && !self.filter.platforms[platform]) return false
+								let willShow = self.filter.nodes[tipoNodo]
+									&& (!self.filter.individualNodes ||
+											!self.filter.individualNodes[tipoNodo] || Object.keys(self.filter.individualNodes).length == 0 || 
+											self.filter.individualNodes[tipoNodo][n.id].selected)
+								if (willShow) self.nodeNumbers[tipoNodo] += 1
+								return willShow
 						}, 'node')
 						.apply()
+						this.$emit('nodeNumbers', this.nodeNumbers)
 					}
 
 					if (!combined) {
@@ -441,6 +479,7 @@
 		},
 		data() {
 			return {
+				nodeNumbers: undefined,
 				rendered: false,
 				nodes: undefined,
 				edges: undefined,

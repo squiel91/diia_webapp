@@ -1,7 +1,7 @@
 <template>
 	<div class="details">
 		<div v-if="!focused" class="empty">
-			<v-chip><v-avatar style="background-color: white;"><v-icon>help</v-icon></v-avatar>Seleccione un nodo o una interraccion para ver mas detalles</v-chip>
+			<v-chip><v-avatar style="background-color: white;"><v-icon>help</v-icon></v-avatar>Seleccione un nodo o una interracción para ver mas detalles</v-chip>
 		</div>
 		<div v-if="focused && focused.isNode" class="alumno">
 			<v-chip><v-avatar style="background-color: white;"><img :src="avatar"></v-avatar><span class="type">{{ type }}</span> {{ name }}</v-chip>
@@ -9,7 +9,7 @@
 		<div v-if="focused && !focused.isNode" class="interaccion">
 			<v-chip>
 				<v-avatar style="background-color: white;"><img :src="`img/${value < 8? value : 'many'}.png`"></v-avatar>
-				<span class="type">Interaccion</span><span> {{ origin_target }}</span>
+				<span class="type">Interacción</span><span> {{ origin_target }}</span>
 			</v-chip>
 		</div>
 	</div>
@@ -47,9 +47,9 @@
 		methods: {
 			refresh() {
 				var short = {
-					e: 'Alumno',
+					e: 'Estudiante',
 					d: 'Docente',
-					m: 'Material',
+					m: 'Recurso',
 					a: 'Actividad'
 				}
 				// console.log(this.focused)

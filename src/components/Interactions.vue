@@ -63,7 +63,7 @@
 			contentTypeName() {
 				return {
 					vid: 'video',
-					img: 'imagen',
+					img: 'imágen',
 					tex: 'texto',
 					gif: 'GIF animado',
 					des: 'Desconocido',
@@ -86,9 +86,9 @@
 				let tipo_name = {
 					vis: 'Visto',
 					msj: 'Mensaje',
-					pub: 'Publicacion',
-					men: 'Mencion',
-					rea: 'Reaccion',
+					pub: 'Publicación',
+					men: 'Mención',
+					rea: 'Reacción',
 					com: 'Comentario'
 				}
 				return tipo_name[this.interaction.tipo] || this.interaction.tipo 
@@ -121,10 +121,10 @@
 				var days_name = {
 					'0': 'Lunes',
 					'1': 'Martes',
-					'2': 'Miercoles',
+					'2': 'Miércoles',
 					'3': 'Jueves',
 					'4': 'Viernes',
-					'5': 'Sabado',
+					'5': 'Sábado',
 					'6': 'Domingo'
 				}
 				var months_name = {
@@ -142,7 +142,7 @@
 					'11': 'Diciembre'
 				}
 				var d = new Date(this.interaction.fecha)
-				return `${days_name[d.getDay()]} ${d.getDate()} ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
+				return `${days_name[d.getDay()]} ${d.getDate()} de ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
 			}
 		}
 	}

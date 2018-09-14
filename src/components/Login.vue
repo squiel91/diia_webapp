@@ -25,7 +25,8 @@
 					></v-text-field>
 					<v-btn class="wide ma-0 mb-2" :loading="loading" full-width color="primary" @click="signIn()">
 						<span>Iniciar sesión</span></v-btn>
-					<a href="privacy.html" @click.stop.prevent="privacy = true">Politicas de privacidad</a>
+					<a target="_blank" href="docs/DIIA_recomendaciones_para_instituciones_educativas.pdf">Recomendaciones para el uso ético por Dra. Patricia Díaz</a>
+					<!-- <a href="privacy.html" @click.stop.prevent="privacy = true">Politicas de privacidad</a> -->
 				</v-form>
 			</div>
 			<div class="column">

@@ -1,19 +1,6 @@
 <template>
 	<div class="filters">
-		<h2><v-icon style="color: black !important;">local_library</v-icon>Cursos</h2>
-		<v-select
-        :items="courses"
-        item-text="titulo"
-        item-value="id_curso"
-        v-model="course"
-        solo
-        >
-        </v-select>
-		<h2><v-icon style="color: black !important;">timeline</v-icon>Nodos e interacciones</h2>
-		<touchFilter ref="touchFilter" :nodes="index.nodes" @change="assignTouchFilter($event)"></touchFilter>
-		<h2><v-icon style="color: black !important;">filter_list</v-icon>Tipos de interacciones</h2>
-		<interactionFilter @change="interactionTypes=$event"></interactionFilter>
-		<h2><v-icon style="color: black !important;">event</v-icon>Periodo</h2>
+		<h2><v-icon style="color: black !important;">event</v-icon>Período</h2>
 		<v-menu
 			lazy
 			v-model="startDateField"
@@ -64,7 +51,13 @@
 			no-title
 			></v-date-picker>
 		</v-menu>
-		<h2><v-icon style="color: black !important;">data_usage</v-icon>Medida</h2>
+		<h2><v-icon style="color: black !important;">timeline</v-icon>Nodos e interacciones</h2>
+		<touchFilter @individualSelection="individualSelection($event)" ref="touchFilter" :nodes="index.nodes" @change="assignTouchFilter($event)"></touchFilter>
+		<h2><v-icon style="color: black !important;">filter_list</v-icon>Tipos de interacciones</h2>
+		<interactionFilter @change="interactionTypes=$event"></interactionFilter>
+		<h2><v-icon style="color: black !important;">web</v-icon>Plataformas</h2>
+		<platformFilter @change="platforms=$event"></platformFilter>
+		<h2><v-icon style="color: black !important;">data_usage</v-icon>Métricas sociales</h2>
 		<div class="course">
 			<v-select
 			solo
@@ -80,8 +73,8 @@
 			></v-select>
 		</div>
 		<v-tooltip top>
-			<v-switch slot="activator" class="ma-0" color="primary" label="Polaridad de sentimiento" v-model="polarity"></v-switch>
-			<span>para los mensajes</span>
+			<v-switch slot="activator" class="ma-0" color="primary" label="Sentimiento de interacciones" v-model="polarity"></v-switch>
+			<span>Solo entre enstudiantes</span>
 		</v-tooltip>
 
 
@@ -97,20 +90,17 @@
 </template>
 
 <script>
+	import PlatformFilter from './Platforms.vue'
 	import TouchFilter from './TouchFilter.vue'
 	import InteractionFilter from './InteractionFilter.vue'
 
 	export default {
-		props: ['courses', 'index'],
+		props: ['course', 'index'],
 		data() {
 			return {
 				// General
-				lastCourse: undefined,
 				changed: false,
 				loadingCount: 0,
-
-				// Courses
-				course: undefined,
 
 				// TouchFilter
 				nodes: undefined,
@@ -119,6 +109,7 @@
 
 				// Interaction types
 				interactionTypes: undefined,
+				platforms: undefined,
 
 				// Date				
 				startDateField: false,
@@ -130,34 +121,34 @@
 				metric: undefined,
 				metrics: [
 					{
-						name: 'Grado de entrada',
-						id: 'indegree',
+						name: 'Popularidad',
+						id: 'idc',
 						explanation: 'Recibe muchas interacciones'
 					},	
 					{
-						name: 'Grado de salida',
-						id: 'outdegree',
+						name: 'Participación',
+						id: 'odc',
 						explanation: 'Inicia muchas interacciones'
 					},					
 					{
-						name: 'Cercania',
-						id: 'closeness',
-						explanation: 'Grado de influencia en el grupo'
+						name: 'Cercanía',
+						id: 'clc',
+						explanation: 'Llega a muchos en comunicación'
 					},
 					{
-						name: 'Egen vector',
-						id: 'pagerank',
-						explanation: 'Influencia por la importancia de sus contactos'
+						name: 'Influencia',
+						id: 'prc',
+						explanation: 'Está conectado a otros que son influyentes'
 					},
 					{
-						name: 'Excentricity',
-						id: 'eccentricity',
-						explanation: 'Envia muchas interacciones'
+						name: 'Distancia',
+						id: 'ecc',
+						explanation: 'Interactúa poco'
 					},
 					{
-						name: 'Betweenes',
-						id: 'betweenes',
-						explanation: 'Persona estratégica para diseminar información'
+						name: 'Puente',
+						id: 'bec',
+						explanation: 'Es el enlace para alcanzar un grupo'
 					}
 				],
 				polarity: false,
@@ -190,6 +181,13 @@
       		}
 		},
 		methods: {
+			softReset() {
+				this.$refs.touchFilter.softReset()
+				this.changed = true
+			},
+			individualSelection(event) {
+				this.$emit('individualSelection', event)
+			},
 			loading(modifyBy) {
 				this.loadingCount += modifyBy
 				if (this.loadingCount < 0) this.loadingCount = 0
@@ -203,7 +201,7 @@
 			assignTouchFilter(data) {
 				this.changed = true
 				this.nodes = data.nodeTypes
-				this.interactions = data.interactionTypes
+				this.interactions = data.interactionTypes // carefull, is not the same top level interactionTypes
 				this.individualNodes = data.individualNodes
 			},
 
@@ -214,11 +212,12 @@
 				if (metricId) {
 					let interactions = this.mergeSelected(this.interactions)
 					let interactionTypes = this.mergeSelected(this.interactionTypes)
+					let platforms = this.mergeSelected(this.platforms)
 					let nodos = this.mergeSelected(this.nodes)
 					let startDate = this.startDate? this.startDate : '*'
 					let endDate = this.endDate? this.endDate : '*'
 					
-					let metricsQuerry = `calculo/${this.course}/${metricId}/${interactions}/${interactionTypes}/${nodos}/${startDate}/${endDate}`
+					let metricsQuerry = `calculo/${this.$store.getters.docente}/${this.course}/${metricId}/${interactions}/${interactionTypes}/${nodos}/${startDate}/${endDate}`
 
 					this.sendingUrl = metricsQuerry
 					this.sending = true
@@ -229,22 +228,14 @@
 					}
 				}
 
-				if (this.lastCourse && (this.lastCourse != this.course)) {
-					var touchFilter = this.$refs.touchFilter
-					touchFilter.clearIndividualNodes()
-					this.individualNodes = undefined
-				}
-
-				this.lastCourse = this.course
-
 				this.loadingCount = 1
 
 				this.$emit('filter', {
-					course: this.course,
 					nodes: this.clone(this.nodes),
 					individualNodes: this.individualNodes? this.clone(this.individualNodes) : undefined,
 					interactions: this.clone(this.interactions),
 					interactionTypes: this.clone(this.interactionTypes),
+					platforms: this.clone(this.platforms),
 					startDate: this.startDate,
 					endDate: this.endDate,
 					metric: metricInfo,
@@ -254,20 +245,25 @@
 			},
 		},
 		mounted() {
-			if (this.courses && this.courses[0]) {
-				this.course = this.courses[0].id_curso 
-			}
 			this.filter()
 			this.changed = false
 		},
 		watch: {
 			course() {
-				this.changed = true
+				var touchFilter = this.$refs.touchFilter
+				touchFilter.clearIndividualNodes()
+				this.individualNodes = undefined
 			},
 			polarity() {
 				this.changed = true
 			},
 			interactionTypes: {
+				handler() {
+					this.changed = true
+				},
+				deep: true
+			},
+			platforms: {
 				handler() {
 					this.changed = true
 				},
@@ -285,6 +281,7 @@
 		},
 		components: {
 			touchFilter: TouchFilter,
+			platformFilter: PlatformFilter,
 			interactionFilter: InteractionFilter
 		}
 	}

@@ -41,7 +41,7 @@ export default {
 			platformName() {
 				return {
 					p: 'PAM',
-					c: 'Crea 2',
+					c: 'CREA 2',
 					f: 'Facebook',
 					m: 'Moodle'
 				}[this.platform]
@@ -57,7 +57,7 @@ export default {
 			contentTypeName() {
 				return {
 					vid: 'video',
-					img: 'imagen',
+					img: 'imágen',
 					tex: 'texto',
 					gif: 'GIF animado'
 				}[this.contentType]
@@ -76,10 +76,10 @@ export default {
 				var days_name = {
 					'0': 'Lunes',
 					'1': 'Martes',
-					'2': 'Miercoles',
+					'2': 'Miércoles',
 					'3': 'Jueves',
 					'4': 'Viernes',
-					'5': 'Sabado',
+					'5': 'Sábado',
 					'6': 'Domingo'
 				}
 				var months_name = {
