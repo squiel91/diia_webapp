@@ -243,8 +243,13 @@
 				var node_images = {
 					d: 'img/docente.png', // docente
 					e: 'img/estudiante.png', //estudiante
-					m: 'img/recurso.svg', // recurso
-					a: 'img/actividad.png' // actvidad
+					a: 'img/actividad.png', // actvidad
+					m_vid: 'img/vid.png',
+					m_img: 'img/img.png',
+					m_tex: 'img/tex.png',
+					m_gif: 'img/gif.png',
+					m_des: 'img/unknown.png',
+					m_lik: 'img/recurso.svg'
 				}
 
 				sigma.utils.pkg('sigma.canvas.nodes');
@@ -324,7 +329,7 @@
 						id: node.id,
 						label: node.nombre.length <= 10? node.nombre : node.nombre.substring(0,11) + '...',
 						type: 'image',
-						url: node_images[node.tipo],
+						url: node.tipo == 'm'? node_images[`${node.tipo}_${node.cont}`] : node_images[node.tipo],
 						x: typePos[node.tipo].x + (node.tipo != 'd'? Math.random(): 0),
 						y: typePos[node.tipo].y + (node.tipo != 'd'? Math.random(): 0),
 						size: this.DEFAULT_SIZE

@@ -44,7 +44,7 @@
 				return this.data.datos.map(d => trimer(10, d.nombre))
 			},
 			colors() {
-				return this.data.datos.map(d => '#'+Math.floor(Math.random()*16777215).toString(16)) 
+				return this.data.datos.map(d => d.color)
 			}
 		},
 		filters: {
@@ -60,14 +60,17 @@
 
 <style scoped>
 	.graph {
-		border: 1pt solid lightgray;
+		border-bottom: 2pt solid lightgray;
+    	border-radius: 7pt;
 		margin: 5pt;
-		border-radius: 3pt;
 		padding: 20pt 0pt 5pt 0pt;
+		margin-top: 15pt;
+
 	}
 
 	h1 {
-		text-align: center
+		text-align: center;
+		font-size: 15pt;
 	}
 
 	.axis {

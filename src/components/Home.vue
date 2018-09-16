@@ -11,7 +11,7 @@
 			style="z-index: 200; width: 390px"
 			class="pa-0"
     	>
-    		<div class="absoluteFilter" @click.stop="(drawer = !drawer) && (rearange = false)"><div class="textFilter">{{drawer? '&gt;':'&lt;'}}<br><br>F<br>I<br>L<br>T<br>R<br>O<br>S<br><br>{{drawer? '&gt;':'&lt;'}}</div></div>
+    		<div class="filtersDrawer" @click.stop="(drawer = !drawer) && (rearange = false)"><div class="textFilter">{{drawer? '&gt;':'&lt;'}}<br><br>F<br>I<br>L<br>T<br>R<br>O<br>S<br><br>{{drawer? '&gt;':'&lt;'}}</div></div>
 			<filters 
 			 style="padding-left: 14px" 
 			 class="ma-3"
@@ -26,15 +26,18 @@
 			:width="424"
       		fixed
       		v-model="analisisDrawer"
+      		clipped
       		left
       		app
 			:mobile-break-point="500"
-			style="z-index: 200; width: 440px"
+			style="z-index: 200; width: 440px; overflow-y: hidden;"
 			class="pa-0"
 			:class="{closed: !analisisDrawer}"
     	>
-    		<div :class="{open: analisisDrawer}" class="analisisToggle" @click.stop="(analisisDrawer = !analisisDrawer)"><div class="textFilter">{{!analisisDrawer? '&gt;':'&lt;'}}<br><br>E<br>S<br>T<br>A<br>D<br>Í<br>S<br>T<br>I<br>C<br>A<br>S<br><br>{{!analisisDrawer? '&gt;':'&lt;'}}</div></div>
+    		<div :class="{open: analisisDrawer}" class="analisisDrawer" @click.stop="openAnalisisDrawer()"><div class="textFilter">{{!analisisDrawer? '&gt;':'&lt;'}}<br><br>E<br>S<br>T<br>A<br>D<br>Í<br>S<br>T<br>I<br>C<br>A<br>S<br><br>{{!analisisDrawer? '&gt;':'&lt;'}}</div></div>
 			<analisis 
+			 ref="analisis"
+			 @clicked="clicked = $event"
 			 :filter="filterConditions"
 			 :nodeNumbers="nodeNumbers"
 			 :course="course"
@@ -55,7 +58,7 @@
 				@click.stop="rearange = !rearange">
     			<v-icon>{{ rearangeFab }}</v-icon>
 				</v-btn>
-				<nodedetailed ref="nodedetailed" :info="clicked" :curso="filterConditions && filterConditions.course" :index="dataGraphIndex"></nodedetailed>
+				<nodedetailed ref="nodedetailed" :info="clicked" :course="course" :index="dataGraphIndex"></nodedetailed>
 				<graph
 				ref="graph"
 				:dataGraph="dataGraph"
@@ -98,6 +101,10 @@
 			}
 		},
 		methods: {
+			openAnalisisDrawer() {
+				 this.$refs.analisis.adjust_height()
+				 this.analisisDrawer = !this.analisisDrawer
+			},
 			individualSelection(event) {
 				this.$refs.graph.individualSelection(event)
 			},
@@ -178,7 +185,8 @@
 		width: 100%;
 	}
 
-	.absoluteFilter, .analisisToggle {
+	.filtersDrawer, .analisisDrawer {
+		overflow-x: hidden;
 		position: absolute;
 		top: 0pt;
 		width: 12pt;
@@ -186,20 +194,22 @@
 		background-color: #8e44ad;
 		color: white;
 		font-weight: bold;
-  		padding-top: 200pt;
+  		padding-top: 150pt;
   		cursor: pointer;
   		z-index: 250;
 	}
 
-	.analisisToggle {
+	.analisisDrawer {
+		overflow-y: hidden;
 		height: 100%;
+		padding-top: 100pt;
 		left: 424px;
 	}
 	.analisisDrawer {
 	    overflow:auto;
 	}
 
-	.absoluteFilter:hover, .analisisToggle:hover {
+	.filtersDrawer:hover, .analisisDrawer:hover {
 		background-color: #81379f;
 	}
 
@@ -208,7 +218,7 @@
 	}
 
 	.open {
-	    left: 410px !important;
+	    /*left: 410px !important;*/
 	}
 
 	.closed {

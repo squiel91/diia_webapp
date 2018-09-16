@@ -1,8 +1,7 @@
 <template>
-	<div class="graph">
-
-		
-		<h1><img :src="urlImgNodo"/> {{ data.nombre }}</h1>
+	<div class="graph" @click="emit()">
+		<img :src="urlImgNodo"/>
+		<h1>{{ data.nombre }}</h1>
 		<h2>{{ data.titulo }}</h2>
 	</div>
 </template>
@@ -13,11 +12,19 @@
 		computed: {
 			urlImgNodo() {
 				return {
-					d: '/img/docente.png',
-					e: '/img/estudiante.png',
-					a: '/img/recurso.svg',
-					m: '/img/actividad.png',
+					Docente: '/img/docente.png',
+					Estudiante: '/img/estudiante.png',
+					Actividad: '/img/recurso.svg',
+					Material: '/img/actividad.png',
 				}[this.data.tipoNodo]
+			}
+		},
+		methods: {
+			emit() {
+				this.$emit('clicked',  {
+					id: this.data.datos,
+					isNode: true
+				})
 			}
 		}
 	}
@@ -25,21 +32,31 @@
 
 <style scoped>
 	.graph {
-		border: 1pt solid lightgray;
+		cursor: pointer;
+		border-bottom: 2pt solid lightgray;
+    	border-radius: 7pt;
 		margin: 5pt;
+		margin-top: 15pt;
 		padding: 15pt 0pt;
-		border-radius: 3pt;
+		width: 45%;
+	    display: inline-block;
+	    text-align: center;
+	}
+
+	img {
+		width: 30pt;
 	}
 
 	h1 {
-		font-size: 30pt;
+		font-size: 12pt;
+		color: #8e44ad;
 		text-align: center
 	}
 
 	h2 {
 		margin-top: 0pt;
     	padding-top: 0pt;
-		font-size: 20pt;
+		font-size: 15pt;
 		text-align: center;
 	}
 </style>

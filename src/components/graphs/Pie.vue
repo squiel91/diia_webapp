@@ -28,18 +28,24 @@
 				return this.data.datos.map(d => d.valor)
 			},
 			labels() {
-				return this.data.datos.map(d => d.nombre)
+				var labels = []
+				for (var dato of this.data.datos) {
+					let percentage = this.getTotal == 0? 0 : this.trunc((dato.valor / this.getTotal) * 100)
+					labels.push(`${dato.nombre} (${percentage}%)`)
+				}
+				return labels
 			},
 			colors() {
-				return this.data.datos.map(d => '#'+Math.floor(Math.random()*16777215).toString(16)) 
+				return this.data.datos.map(d => d.color)
+			},
+			getTotal() {
+				return this.data.datos.map(d => d.valor).reduce((a,b)=>a+b)
 			}
 		},
-		filters: {
+		methods: {
 			trunc(value) {
 				var [whole, decimal] = String(value).split('.')
-				if (!decimal) 
-					return value
-					else return parseFloat(`${whole}.${decimal.substr(0,2)}`)
+				return whole
 			}
 		}
 	}
@@ -47,13 +53,14 @@
 
 <style scoped>
 	.graph {
-		border: 1pt solid lightgray;
+		border-bottom: 2pt solid lightgray;
+    	border-radius: 7pt;
 		margin: 5pt;
-		border-radius: 3pt;
-		
+		margin-top: 15pt;
 	}
 
 	h1 {
-		text-align: center
+		text-align: center;
+		font-size: 15pt;
 	}
 </style>

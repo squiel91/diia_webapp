@@ -37,7 +37,7 @@
 		>
 			<v-text-field
 			slot="activator"
-			label="Fin"
+			label="Fín"
 			v-model="endDateFormatted"
 			clearable
 			readonly

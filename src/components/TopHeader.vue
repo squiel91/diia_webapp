@@ -86,6 +86,9 @@
 <style>
     img.small-logo {
         width: 100pt;
+            position: absolute;
+            top: 6pt;
+            left: 5pt;
     }
 
     .inline {

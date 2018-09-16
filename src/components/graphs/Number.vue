@@ -21,22 +21,26 @@
 
 <style scoped>
 	.graph {
-		border: 1pt solid lightgray;
+		border-bottom: 2pt solid lightgray;
+    	border-radius: 7pt;
 		margin: 5pt;
-		border-radius: 3pt;
+		margin-top: 15pt;
+		width: 45%;
+	    display: inline-block;
 	}
 
 	h1 {
-		font-size: 50pt;
+		font-size: 35pt;
 		text-align: center;
 		margin-bottom: 0pt;
     	padding-bottom: 0pt;
+    	color: #8e44ad
 	}
 
 	h2 {
 		margin-top: 0pt;
     	padding-top: 0pt;
-		font-size: 20pt;
+		font-size: 12pt;
 		text-align: center;
 		position: relative;
 		top: -10pt;

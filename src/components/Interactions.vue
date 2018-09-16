@@ -18,7 +18,8 @@
 		          <div class="extraInfo" v-if="extraInfo">
 		          	<v-progress-linear v-if="!allInfo" :indeterminate="true"></v-progress-linear>
 		            <div v-if="allInfo">
-		            	<div>{{ contentTypeName }}: {{ interaction.tipo == 'rea'? reactionName : content }}</div>
+		            	<div>Tipo de contenido: <strong>{{ contentTypeName }}</strong><br>
+		            	Contenido: {{ interaction.tipo == 'rea'? reactionName : content }}</div>
 			        </div>
 		          </div>
 		        </v-slide-y-transition>

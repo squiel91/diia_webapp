@@ -6,13 +6,13 @@
 	      slider-color="primary"
 	    >
 	      <v-tab ripple>Curso</v-tab>
-	      <v-tab ripple><v-badge><span slot="badge">{{(nodeNumbers && nodeNumbers.a) || '-'}}</span><span>Actividades</span></v-badge></v-tab>
 	      <v-tab ripple><v-badge><span slot="badge">{{(nodeNumbers && nodeNumbers.e) || '-'}}</span><span>Estudiantes</span></v-badge></v-tab>
 	      <v-tab ripple><v-badge><span slot="badge">{{(nodeNumbers && nodeNumbers.m) || '-'}}</span><span>Recursos</span></v-badge></v-tab>
+	      <v-tab ripple><v-badge><span slot="badge">{{(nodeNumbers && nodeNumbers.a) || '-'}}</span><span>Actividades</span></v-badge></v-tab>
 	      <v-tab-item>
 	        <v-card flat>
-	          <v-card-text class="placeholderText" :class="{loading: !data.c}">
-	          	<v-progress-circular v-if="!data.c" indeterminate :size="50" color="primary"/>
+	          <v-card-text class="pr-0 pt-0" :class="{loading: !data.c}" ref="load_c">
+	          	<v-progress-circular class="topPadding" v-if="!data.c" indeterminate :size="50" color="primary"/>
 	          	<div else class="graphs" ref="c">
 	          	</div>
 	          </v-card-text>
@@ -20,17 +20,8 @@
 	      </v-tab-item>
 	      <v-tab-item>
 	        <v-card flat>
-	          <v-card-text class="placeholderText" :class="{loading: !data.a}">
-	            <v-progress-circular v-if="!data.a" indeterminate :size="50" color="primary"/>
-	          	<div else class="graphs" ref="a">
-	          	</div>
-	          </v-card-text>
-	        </v-card>
-	      </v-tab-item>
-	      <v-tab-item>
-	        <v-card flat>
-	          <v-card-text class="placeholderText" :class="{loading: !data.e}">
-	          	<v-progress-circular v-if="!data.e" indeterminate :size="50" color="primary"/>
+	          <v-card-text class="pr-0 pt-0" :class="{loading: !data.e}">
+	          	<v-progress-circular class="topPadding" v-if="!data.e" indeterminate :size="50" color="primary"/>
 	          	<div else class="graphs" ref="e">
 	          	</div>
 	          </v-card-text>
@@ -38,9 +29,18 @@
 	      </v-tab-item>
 	      <v-tab-item>
 	        <v-card flat>
-	          <v-card-text class="placeholderText" :class="{loading: !data.m}">
-	          	<v-progress-circular v-if="!data.m" indeterminate :size="50" color="primary"/>
+	          <v-card-text class="pr-0 pt-0" :class="{loading: !data.m}">
+	          	<v-progress-circular class="topPadding" v-if="!data.m" indeterminate :size="50" color="primary"/>
 	          	<div else class="graphs" ref="m">
+	          	</div>
+	          </v-card-text>
+	        </v-card>
+	      </v-tab-item>
+	      <v-tab-item>
+	        <v-card flat>
+	          <v-card-text class="pr-0 pt-0" :class="{loading: !data.a}">
+	            <v-progress-circular class="topPadding" v-if="!data.a" indeterminate :size="50" color="primary"/>
+	          	<div else class="graphs" ref="a">
 	          	</div>
 	          </v-card-text>
 	        </v-card>
@@ -77,7 +77,8 @@
 		props: ['nodeNumbers', 'filter', 'course'],
 		data () {
       		return {
-		        active: 'c',
+      			heightSeted: false,
+		        active: 0,
 		        data: {
 		        	c: undefined,
 		        	e: undefined,
@@ -93,26 +94,41 @@
     		filter() {
     			this.clear()
     		},
-    		active(newIndex) {
-    			this.update(newIndex)
+    		active() {
+    			this.update()
+    			// this.adjust_height()
     		}
-    	},  
+    	},
+    	computed: {
+    		entity() {
+    			return 'cema'[this.active]
+    		}
+    	},
     	methods: {
+			adjust_height() { 
+				if (!this.heightSeted && this.entity) {
+					// this.heightSeted = true
+					let newHeight = `${window.innerHeight - this.$refs.load_c.getBoundingClientRect().y }px`
+					this.$refs.c.style.height = newHeight
+					this.$refs.e.style.height = newHeight
+					this.$refs.m.style.height = newHeight
+					this.$refs.a.style.height = newHeight
+				}
+			},
     		clear() {
     			for (var entity of 'cema') {
-    				this.$refs[entity].innerHtml = ''
+    				this.$refs[entity].innerHTML = ''
     				this.data[entity] = undefined
     			}
-    			this.update(this.active)
+    			this.update()
     		},
     		initilize() {
-    			this.update(this.active)
+    			this.update()
     		},
-	    	update(index) {
-	    		let entity ='cema'[index]
-	    		if (this.data[entity]) return
-				this.data[entity] = undefined
-				this.$http.get(`http://179.27.71.27/consulta/analisis/${entity}`, {
+	    	update() {
+	    		if (!this.entity || this.data[this.entity]) return
+				this.data[this.entity] = undefined
+				this.$http.get(`http://179.27.71.27/consulta/analisis/${this.entity}`, {
 					params: {
 						id_docente: this.$store.getters.docente,
 						id_curso: this.course,
@@ -128,15 +144,19 @@
 					}
 				})
 				.then(dataIn => {
-					let entity = 'cema'[index]
 					let data = dataIn.body
-					this.data[entity] = data
-					for (var graphData of this.data[entity]) {
+					this.data[this.entity] = data
+					for (var graphData of this.data[this.entity]) {
 						let newGraph = new graficCodes[graphData.tipo]({
 					    	propsData: { data: graphData }
 						})
 						newGraph.$mount()
-						this.$refs[entity].appendChild(newGraph.$el) 
+						if (graphData.tipo == 'nodo') {
+							newGraph.$on('clicked', event => {
+								this.$emit('clicked', event)
+							})
+						}
+						this.$refs[this.entity].appendChild(newGraph.$el) 
 					}
 				}, error => {
 					console.log(error)
@@ -147,11 +167,17 @@
 </script>
 
 <style>
+	.graphs {
+	    overflow-y: scroll;
+	}
+
+	.topPadding {
+		padding-top: 300px;
+	}
+
 	.analisis {
 		margin-top: 7pt;
 		z-index: 100;
-		border-right: 11pt solid #8e44ad;
-		direction: ltr !important;
 	}
 
 	.loading {

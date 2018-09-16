@@ -22,7 +22,8 @@ export default {
 				contentType: undefined,
 				publishedDate: undefined,
 				accessQty: undefined,
-				uri: undefined
+				uri: undefined,
+				package: undefined
 			}
 		},
 		props: ['id'],
@@ -59,7 +60,10 @@ export default {
 					vid: 'video',
 					img: 'imágen',
 					tex: 'texto',
-					gif: 'GIF animado'
+					gif: 'GIF animado',
+					des: 'Desconocido',
+					lik: 'Enlace'
+
 				}[this.contentType]
 			},
 			contentTypeImg() {
@@ -67,7 +71,9 @@ export default {
 					vid: 'img/vid.png',
 					img: 'img/img.png',
 					tex: 'img/tex.png',
-					gif: 'img/gif.png'
+					gif: 'img/gif.png',
+					des: 'img/unknown.png',
+					lik: 'img/link.png'
 				}[this.contentType]
 			}
 		},
@@ -107,6 +113,7 @@ export default {
 					this.$http.get(`http://179.27.71.27/material/${this.id}`)
 						.then(data => {
 							let material = data.body
+							this.package = data.body
 							this.fetchedId = this.id
 							this.$emit('loaded')
 
@@ -114,10 +121,10 @@ export default {
 							this.platform =  material.plataforma
 							this.name = material.nombre
 							this.type = material.tipo
-							this.contentType =  material.tipoContenido
-							this.publishedDate =  material.fechaPublicacion
-							this.accessQty =  material.numeroAccesos
-							this.uri =  material.urlUbicacion
+							this.contentType =  material.tipo_contenido
+							this.publishedDate =  material.fecha_publicacion
+							this.accessQty =  material.numero_accesos
+							this.uri =  material.url_ubicacion
 							
 						}, error => {
 							console.log('Error at retrieving material:')

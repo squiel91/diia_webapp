@@ -29,7 +29,8 @@ export default {
 				deadline: undefined,
 				published: undefined,
 				minScore: undefined,
-				maxScore: undefined
+				maxScore: undefined,
+				package: undefined
 			}
 		},
 		props: ['id'],
@@ -124,6 +125,7 @@ export default {
 					this.$http.get(`http://179.27.71.27/actividad/${this.id}`)
 						.then(data => {
 							let activity = data.body.length == undefined? data.body : data.body[0]
+							this.package = activity
 							this.fetchedId = this.id
 							this.$emit('loaded')
 
@@ -155,7 +157,7 @@ export default {
 	}
 
 	.cell {
-		border: 2pt solid rgba(128, 128, 128, 0.30);
+		border-bottom: 2pt solid lightgray;
 		border-radius: 7pt;
 		display: inline-block;
 		padding: 7pt;

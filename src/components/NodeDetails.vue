@@ -42,7 +42,7 @@
 	import VistaActividad from './vistas/Actividad.vue'
 
 	export default {
-	    props: ['info', 'index', 'curso'],
+	    props: ['info', 'index', 'course'],
 	    components: {
 			interaction: Interaction,
 			vistaActividad: VistaActividad,
@@ -69,7 +69,7 @@
 	    		return this.index.nodes[this.info.id].tipo
 	    	},
 	    	iframeUrl() {
-	    		return `http://diia.edu.uy/alumno/${this.info.id}/cursos/${this.curso}`
+	    		return `http://diia.edu.uy/alumno/${this.info.id}/cursos/${this.course}`
 	    	}
 	    },
 	    watch: {

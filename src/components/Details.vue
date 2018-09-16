@@ -37,8 +37,8 @@
 			avatar() {
 				var node_images = {
 					Docente: 'img/docente.png', // docente
-					Alumno: 'img/estudiante.png', // estudiante
-					Material: 'img/recurso.svg', // recurso
+					Estudiante: 'img/estudiante.png', // estudiante
+					Recurso: 'img/recurso.svg', // recurso
 					Actividad: 'img/actividad.png' // actvidad
 				}
 				return node_images[this.type]
