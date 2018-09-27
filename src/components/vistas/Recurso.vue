@@ -44,7 +44,7 @@ export default {
 					p: 'PAM',
 					c: 'CREA 2',
 					f: 'Facebook',
-					m: 'Moodle'
+					m: 'Uruguay Educa'
 				}[this.platform]
 			},
 			platformImg() {
@@ -103,7 +103,7 @@ export default {
 					'11': 'Diciembre'
 				}
 				var d = new Date(date)
-				return `${days_name[d.getDay()]} ${d.getDate()} ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
+				return `${days_name[d.getDay()]} ${d.getDate()} de ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
 				return date
 			}
 		},

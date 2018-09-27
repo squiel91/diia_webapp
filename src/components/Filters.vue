@@ -1,90 +1,82 @@
 <template>
 	<div class="filters">
-		<h2><v-icon style="color: black !important;">event</v-icon>Período</h2>
-		<v-menu
-			lazy
-			v-model="startDateField"
-			transition="scale-transition"
-			offset-y
-			:close-on-content-click="false"
-			style="width: 110pt"
-		>
-			<v-text-field
-			slot="activator"
-			label="Inicio"
-			v-model="startDateFormatted"
-			solo
-			clearable
-			readonly
+		<div class="filtersContainer" ref="filtersContainer">
+			<h2><v-icon style="color: black !important;">event</v-icon>Período</h2>
+			<v-menu
+				lazy
+				v-model="startDateField"
+				transition="scale-transition"
+				offset-y
+				:close-on-content-click="false"
+				style="width: 110pt"
 			>
-			</v-text-field>
-			<v-date-picker v-model="startDate" 
-			:max="new Date().toISOString().substr(0, 10)"
-			@input="startDateField = false"
-			locale="es-419"
-			no-title
-			></v-date-picker>
-		</v-menu>
-		<span style="position: relative; bottom: 8pt; font-size: x-large;">-</span>
-		<v-menu
-			lazy
-			v-model="endDateField"
-			prepend-icon="event"
-			offset-y
-			transition="scale-transition"
-			:close-on-content-click="false"
-			style="width: 110pt"
-		>
-			<v-text-field
-			slot="activator"
-			label="Fín"
-			v-model="endDateFormatted"
-			clearable
-			readonly
-			solo
+				<v-text-field
+				slot="activator"
+				label="Inicio"
+				v-model="startDateFormatted"
+				solo
+				clearable
+				readonly
+				>
+				</v-text-field>
+				<v-date-picker v-model="startDate" 
+				:max="new Date().toISOString().substr(0, 10)"
+				@input="startDateField = false"
+				locale="es-419"
+				no-title
+				></v-date-picker>
+			</v-menu>
+			<span style="position: relative; bottom: 8pt; font-size: x-large;">-</span>
+			<v-menu
+				lazy
+				v-model="endDateField"
+				prepend-icon="event"
+				offset-y
+				transition="scale-transition"
+				:close-on-content-click="false"
+				style="width: 110pt"
 			>
-			</v-text-field>
-			<v-date-picker v-model="endDate" 
-			:min="startDate"
-			@input="endDateField = false"
-			locale="es-419"
-			no-title
-			></v-date-picker>
-		</v-menu>
-		<h2><v-icon style="color: black !important;">timeline</v-icon>Nodos e interacciones</h2>
-		<touchFilter @individualSelection="individualSelection($event)" ref="touchFilter" :nodes="index.nodes" @change="assignTouchFilter($event)"></touchFilter>
-		<h2><v-icon style="color: black !important;">filter_list</v-icon>Tipos de interacciones</h2>
-		<interactionFilter @change="interactionTypes=$event"></interactionFilter>
-		<h2><v-icon style="color: black !important;">web</v-icon>Plataformas</h2>
-		<platformFilter @change="platforms=$event"></platformFilter>
-		<h2><v-icon style="color: black !important;">data_usage</v-icon>Métricas sociales</h2>
-		<div class="course">
-			<v-select
-			solo
-			:items="metrics"
-			item-text="name"
-			v-model="metric"
-			label="Ninguna metrica seleccionada"
-			:hint="metric? metric.explanation : ''"
-	        persistent-hint
-	        return-object
-	        single-line
-	        clearable
-			></v-select>
+				<v-text-field
+				slot="activator"
+				label="Fin"
+				v-model="endDateFormatted"
+				clearable
+				readonly
+				solo
+				>
+				</v-text-field>
+				<v-date-picker v-model="endDate" 
+				:min="startDate"
+				@input="endDateField = false"
+				locale="es-419"
+				no-title
+				></v-date-picker>
+			</v-menu>
+			<h2><v-icon style="color: black !important;">web</v-icon>Plataformas</h2>
+			<platformFilter @change="platforms=$event"></platformFilter>
+			<h2><v-icon style="color: black !important;">timeline</v-icon>Nodos e interacciones</h2>
+			<touchFilter @individualSelection="individualSelection($event)" ref="touchFilter" :nodes="index.nodes" @change="assignTouchFilter($event)"></touchFilter>
+			<h2><v-icon style="color: black !important;">filter_list</v-icon>Tipos de interacciones</h2>
+			<interactionFilter @change="interactionTypes=$event"></interactionFilter>
+			<h2><v-icon style="color: black !important;">data_usage</v-icon>Métricas sociales</h2>
+			<div class="course">
+				<v-select
+				solo
+				:items="metrics"
+				item-text="name"
+				v-model="metric"
+				label="Ninguna métrica seleccionada"
+				:hint="metric? metric.explanation : ''"
+		        persistent-hint
+		        return-object
+		        single-line
+		        clearable
+				></v-select>
+			</div>
+			<v-switch class="ma-0" color="primary" label="Sentimiento de interacciones" v-model="polarity"></v-switch>
 		</div>
-		<v-tooltip top>
-			<v-switch slot="activator" class="ma-0" color="primary" label="Sentimiento de interacciones" v-model="polarity"></v-switch>
-			<span>Solo entre enstudiantes</span>
-		</v-tooltip>
 
-
-		<v-btn :loading="loadingCount > 0" color="primary" class="ma-0 mt-4 wide" :disabled="(loadingCount <= 0) && !changed" @click="filter()" full-width>Aplicar</v-btn>
-		<v-snackbar
-	  	bottom
-      	v-model="sending"
-    	>
-    	{{ sendingUrl }}
-    	<v-btn dark flat @click.native="sending = false">Close</v-btn>
+		<v-btn ref="mainButton" :loading="loadingCount > 0" color="primary" class="ma-0 mt-4 wide" :disabled="(loadingCount <= 0) && !changed" @click="filter()" full-width>Aplicar</v-btn>
     </v-snackbar>
 	</div>
 </template>
@@ -152,8 +144,7 @@
 					}
 				],
 				polarity: false,
-				sending: false,
-				sendingUrl: ''
+				heightSeted: false
 			}
 		},
 		computed: {
@@ -181,8 +172,15 @@
       		}
 		},
 		methods: {
+			adjust_height() { 
+				if (!this.heightSeted) {
+					let newHeight = `${window.innerHeight - 135}px`
+					this.$refs.filtersContainer.style.height = newHeight
+				}
+			},
 			softReset() {
 				this.$refs.touchFilter.softReset()
+				this.filter()
 				this.changed = true
 			},
 			individualSelection(event) {
@@ -219,9 +217,6 @@
 					
 					let metricsQuerry = `calculo/${this.$store.getters.docente}/${this.course}/${metricId}/${interactions}/${interactionTypes}/${nodos}/${startDate}/${endDate}`
 
-					this.sendingUrl = metricsQuerry
-					this.sending = true
-
 					metricInfo = {
 						id: metricId,
 						querry: metricsQuerry
@@ -229,7 +224,6 @@
 				}
 
 				this.loadingCount = 1
-
 				this.$emit('filter', {
 					nodes: this.clone(this.nodes),
 					individualNodes: this.individualNodes? this.clone(this.individualNodes) : undefined,
@@ -245,6 +239,7 @@
 			},
 		},
 		mounted() {
+			this.adjust_height()
 			this.filter()
 			this.changed = false
 		},
@@ -288,6 +283,12 @@
 </script>
 
 <style scoped>
+	.filtersContainer {
+		height: 300pt;
+		overflow-y: scroll;
+		overflow-x: hidden;
+		padding-top: 10pt;
+	}
 
 	h2 {
 		border-bottom: 2pt solid black;

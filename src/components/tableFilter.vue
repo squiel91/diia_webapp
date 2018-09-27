@@ -149,6 +149,14 @@
 			}
 		},
 		methods: {
+			reset() {
+				this.initialized = false
+				this.selected = {
+					e: [],
+					m: [],
+					a: []
+				}
+			},
 			initialize() {
 				for (var entity of 'eam')
 					for (var record of Object.values(this.index[entity]))
@@ -187,13 +195,11 @@
 				var minutes = String(d.getMinutes())
 				if (minutes.length == 1) minutes = '0' + minutes
 				return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${hour}:${minutes}`
-				return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${d.getHours()}:${minutes}`
-
       		}
 		},
 		computed: {
 			conditions() {
-				return this.allConditions[this.entity]
+				return this.allConditions? this.allConditions[this.entity] : []
 			},
 			headers() {
 				return this.entityHeaders[this.entity]
@@ -203,7 +209,7 @@
 					f: 'Facebook',
 					p: 'PAM',		
 					c: 'CREA 2',
-					m: 'Moodle'
+					m: 'Uruguay Educa'
 				}
 
 				let contentTypeDict = {
@@ -214,7 +220,8 @@
 						des: 'Desconocido',
 						lik: 'Enlace'
 				}
-
+				// debugger
+				if (Object.keys(this.index).length == 0 || !this.entity) return []
 				var preprocesedItems = JSON.parse(JSON.stringify(Object.values(this.index[this.entity]).map(n => n.info)))
 
 				for (var preprocesedItem of preprocesedItems) {

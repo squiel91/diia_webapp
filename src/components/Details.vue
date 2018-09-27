@@ -38,7 +38,7 @@
 				var node_images = {
 					Docente: 'img/docente.png', // docente
 					Estudiante: 'img/estudiante.png', // estudiante
-					Recurso: 'img/recurso.svg', // recurso
+					Recurso: 'img/recurso.png', // recurso
 					Actividad: 'img/actividad.png' // actvidad
 				}
 				return node_images[this.type]

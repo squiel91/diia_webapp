@@ -12,10 +12,10 @@
 		computed: {
 			urlImgNodo() {
 				return {
-					Docente: '/img/docente.png',
-					Estudiante: '/img/estudiante.png',
-					Actividad: '/img/recurso.svg',
-					Material: '/img/actividad.png',
+					Docente: 'img/docente.png',
+					Estudiante: 'img/estudiante.png',
+					Material: 'img/recurso.png',
+					Actividad: 'img/actividad.png',
 				}[this.data.tipoNodo]
 			}
 		},

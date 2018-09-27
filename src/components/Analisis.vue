@@ -123,7 +123,7 @@
     			this.update()
     		},
     		initilize() {
-    			this.update()
+    			// this.update()
     		},
 	    	update() {
 	    		if (!this.entity || this.data[this.entity]) return
@@ -145,6 +145,7 @@
 				})
 				.then(dataIn => {
 					let data = dataIn.body
+					this.$refs[this.entity].innerHTML = ''
 					this.data[this.entity] = data
 					for (var graphData of this.data[this.entity]) {
 						let newGraph = new graficCodes[graphData.tipo]({

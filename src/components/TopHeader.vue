@@ -85,10 +85,10 @@
 
 <style>
     img.small-logo {
-        width: 100pt;
-            position: absolute;
-            top: 6pt;
-            left: 5pt;
+        width: 52pt;
+        position: absolute;
+        top: -3pt;
+        left: 20pt;
     }
 
     .inline {

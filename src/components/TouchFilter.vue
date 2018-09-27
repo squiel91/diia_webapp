@@ -5,6 +5,7 @@
 		:elements="nodeIndex"
 		@close="individualSelectionModal = ''"
 		@change="individualSelectionModal = '' ||  emit()"
+		ref="individualSelection"
 		@a="sendSelection('a')"
 		@e="sendSelection('e')"
 		@m="sendSelection('m')">
@@ -96,7 +97,7 @@
 				      style="max-width: 600px"
 				    >
 				    <div slot="activator">
-						<img src="img/recurso.svg">
+						<img src="img/recurso.png">
 						<div class="label">Recurso</div>
 						<img class="funnel" v-if="personalizedSelectionRecurso" src="img/funnel.png">
 					</div>
@@ -149,8 +150,8 @@
 
 				listItems: [
 			        { title: 'Seleccionar todos' },
-			        { title: 'No selecionar ninguno' },
-			        { title: 'Seleccion personalizada' }
+			        { title: 'No seleccionar ninguno' },
+			        { title: 'Selección personalizada' }
 			      ],
 				
 				nodeIndex: undefined,
@@ -234,6 +235,8 @@
 				this.personalizedSelectionActividad = false
 				this.personalizedSelectionEstudiante = false
 				this.personalizedSelectionRecurso = false
+				this.$refs.individualSelection.reset()
+				this.emit()
 			},
 			sendSelection(entity) {
 				switch (entity) {

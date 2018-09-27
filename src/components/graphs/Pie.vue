@@ -1,6 +1,15 @@
 <template>
 	<div class="number graph">
-		<canvas ref="graphContainer"/>
+		<div class="canvasContainer">
+			<canvas ref="graphContainer"/>
+		</div>
+		<div class="legends">
+			<div class="legendContainer" v-for="(label, index) of labels">
+				<div class="legend" style="font-weight: bold;" :style="{color: colors[index]}">
+					{{ label }}
+				</div>
+			</div>
+		</div>
 		<h1>{{ data.titulo }}</h1>
 	</div>
 </template>
@@ -13,14 +22,18 @@
 			    datasets: [{
 			        data: this.values,
 			        backgroundColor: this.colors
-
 			    }],
 			    labels: this.labels
 			};
 			let container = this.$refs.graphContainer
 			var myPieChart = new Chart(container,{
-			    type: 'doughnut',
+			    type: 'pie',
 			    data: data,
+			    options: {
+			    	legend: {
+			    		display: false
+			    	}
+			    }
 			});
 		},
 		computed: {
@@ -31,7 +44,7 @@
 				var labels = []
 				for (var dato of this.data.datos) {
 					let percentage = this.getTotal == 0? 0 : this.trunc((dato.valor / this.getTotal) * 100)
-					labels.push(`${dato.nombre} (${percentage}%)`)
+					labels.push(`${dato.nombre}: ${percentage}%`)
 				}
 				return labels
 			},
@@ -52,15 +65,36 @@
 </script>
 
 <style scoped>
+	.canvasContainer {
+		width: 150pt !important;
+		float: left
+	}
+
+	.legends {
+		float: left;
+		margin-top: 40pt;
+		padding-left: 10pt;
+
+		
+	}
+
+	.legendContainer {
+		width: 110pt !important;
+
+	}
+
 	.graph {
 		border-bottom: 2pt solid lightgray;
     	border-radius: 7pt;
 		margin: 5pt;
 		margin-top: 15pt;
+		overflow: auto; 
 	}
 
 	h1 {
 		text-align: center;
-		font-size: 15pt;
+		font-size: 13pt;
+		clear: both
+
 	}
 </style>

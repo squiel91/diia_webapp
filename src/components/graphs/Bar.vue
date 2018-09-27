@@ -74,7 +74,7 @@
 	}
 
 	.axis {
-		color: gray;
+		color: black;
 		font-style: italic;
 	}
 </style>

@@ -107,8 +107,8 @@
 			polaridad_string() {
 				let polaridad_name = {
 					'p': 'positiva',
-					'e': 'negativa',
-					'n': 'neutra'
+					'n': 'negativa',
+					'e': 'neutra'
 				}
 				return polaridad_name[this.interaction.polaridad]
 			},

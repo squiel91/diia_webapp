@@ -63,7 +63,8 @@
 	    },
 	    computed: {
 	    	interactions() {
-	    		return this.index.combined_edges_index[this.info.id].interactions
+	    		// debugger
+	    		return this.index.combined_edges_index[this.info.id].interactions.sort((a, b)=>b.fecha-a.fecha)
 	    	},
 	    	type() {
 	    		return this.index.nodes[this.info.id].tipo
@@ -73,13 +74,9 @@
 	    	}
 	    },
 	    watch: {
-				'$props':{
+				'info':{
 					handler: function (newVal, oldVal) { 
-						if (this.firstChange) {
-							this.mostrarInteracciones = true
-						} else {
-							this.firstChange = true
-						}
+						this.mostrarInteracciones = true
 					},
 					deep: true
 				},
@@ -120,8 +117,8 @@
 	    height: 30px;
 	    width: 30px;
 	    position: absolute;
-	    right: 20pt;
-        top: 6pt;
+	    right: 27pt;
+        top: 12pt;
 	}
 
 	iframe {

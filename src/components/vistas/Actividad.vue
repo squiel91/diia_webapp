@@ -1,6 +1,7 @@
 <template>
 	<div class="vistaActividad">
 		<h1>{{ typeName }}: {{ name }}</h1>
+		
 		<div class="grid">
 			<div class="cell"><img :src="platformImg"><label>Plataforma: {{ platformName }}</label></div>
 
@@ -10,8 +11,27 @@
 		<div><v-chip><v-avatar><v-icon>visibility</v-icon></v-avatar>Cantidad de accesos: {{ accessQty }}</v-chip></div>
 		<div><v-chip><v-avatar><v-icon>event</v-icon></v-avatar>Publicado el {{ published | formatDate }}</v-chip></div>
 		<div><v-chip><v-avatar><v-icon>event</v-icon></v-avatar>Completar hasta {{ deadline | formatDate }}</v-chip></div>
-		<div><v-chip><v-avatar><v-icon>maximize</v-icon></v-avatar>Calificacion maxima: {{ maxScore }}</v-chip></div>
-		<div><v-chip><v-avatar><v-icon>minimize</v-icon></v-avatar>Calificacion minima: {{ minScore }}</v-chip></div>
+		<!-- <div><v-chip><v-avatar><v-icon>maximize</v-icon></v-avatar>Calificacion maxima: {{ maxScore }}</v-chip></div> -->
+		<!-- <div><v-chip><v-avatar><v-icon>minimize</v-icon></v-avatar>Calificacion minima: {{ minScore }}</v-chip></div> -->
+		<h2>Calificaciones de estudiantes</h2>
+		<v-data-table
+		 rows-per-page-text="Recursos por página"
+		 :rows-per-page-items="[10,20,30, {text:'Todos', value: -1}]"
+		 :headers="headers"
+		 :items="results"
+		 class="elevation-1"
+		>
+			<template slot="items" slot-scope="props">
+				<td>{{ props.item.nombre }}</td>
+				<td class="text-xs">{{ props.item.fecha_entrega }}</td>
+				<td class="text-xs">{{ props.item.nota }}</td>
+			</template>
+			<template slot="no-data">
+		    	<v-alert :value="true" color="error" icon="warning">
+		        Aún no hay ninguna calificación por mostrar.
+		      </v-alert>
+		    </template>
+		</v-data-table>
 	</div>
 </template>
 
@@ -30,7 +50,17 @@ export default {
 				published: undefined,
 				minScore: undefined,
 				maxScore: undefined,
-				package: undefined
+				results: [],
+				package: undefined,
+				headers: [
+					{
+						text: 'Nombre',
+						align: 'left',
+						value: 'nombre'
+					},
+					{ text: 'Fecha de entrega', value: 'fecha_entrega', align: 'left'},
+					{ text: 'calificación', value: 'nota', align: 'left'}
+				]
 			}
 		},
 		props: ['id'],
@@ -71,7 +101,7 @@ export default {
 					'11': 'Diciembre'
 				}
 				var d = new Date(date)
-				return `${days_name[d.getDay()]} ${d.getDate()} ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
+				return `${days_name[d.getDay()]} ${d.getDate()} de ${months_name[d.getMonth()]} del ${d.getFullYear()}, ${d.getHours()} horas y ${d.getMinutes()} minutos`
 				return date
 			}
 		},
@@ -87,7 +117,7 @@ export default {
 					p: 'PAM',
 					c: 'CREA 2',
 					f: 'Facebook',
-					m: 'Moodle'
+					m: 'Uruguay Educa'
 				}[this.platform]
 			},
 			platformImg() {
@@ -120,6 +150,16 @@ export default {
 			}
 		},
 		methods: {
+			dateFormatted(timestamp) {
+				if (!timestamp) return null
+
+				var d = new Date(timestamp)
+				var hour = String(d.getHours())
+				if (hour.length == 1) hour = '0' + hour
+				var minutes = String(d.getMinutes())
+				if (minutes.length == 1) minutes = '0' + minutes
+				return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${hour}:${minutes}`
+      		},
 			fetchData() {
 				if (this.id && this.id != this.fetchedId) {
 					this.$http.get(`http://179.27.71.27/actividad/${this.id}`)
@@ -135,10 +175,19 @@ export default {
 							this.contentType = activity.tipo_contenido
 							this.type = activity.tipo
 							this.accessQty = activity.numero_accesos
-							this.deadline = activity.fechaLimite
+							this.deadline = activity.fecha_limite
 							this.published = activity.fecha_publicacion
 							this.minScore = activity.calificacion_minima
 							this.maxScore = activity.calificacion_maxima
+							this.egoGraph = activity.egoGrafo
+							this.results = (activity.resultados || activity.egoGrafo.resultados)
+							this.results = this.results.map(a => {
+								return {
+									nombre: a.nombre,
+									fecha_entrega: this.dateFormatted(a.fecha_entrega),
+									nota: parseFloat(a.nota)
+								}
+							})
 							
 						}, error => {
 							console.log('Error at retrieving activity:')
@@ -152,6 +201,10 @@ export default {
 </script>
 
 <style scoped>
+	h2 {
+		margin-top: 20pt;
+	}
+
 	img {
 		width: 100%
 	}

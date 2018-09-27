@@ -7,10 +7,10 @@
 			<v-card-text>
 				<p>Elija {{ entityNameComplete }} que quiera ver en el grafo. Puede
 seleccionarlos directamente, o crear condiciones para filtrarlos. Al finalizar, presione “Aplicar” para visualizar los cambios en el grafo.</p>
-				<conditionChain class="conditionChain" v-show="entity == 'e'" entity="e" @change="allConditions.e = $event"></conditionChain>
-				<conditionChain class="conditionChain" v-show="entity == 'm'" entity="m" @change="allConditions.m = $event"></conditionChain>
-				<conditionChain class="conditionChain" v-show="entity == 'a'" entity="a" @change="allConditions.a = $event"></conditionChain>
-				<tableFilter :entity="entity" :index="index" :allConditions="allConditions" @change="selectedNodes = $event"></tableFilter>
+				<conditionChain ref="e" class="conditionChain" v-show="entity == 'e'" entity="e" @change="allConditions.e = $event"></conditionChain>
+				<conditionChain ref="m" class="conditionChain" v-show="entity == 'm'" entity="m" @change="allConditions.m = $event"></conditionChain>
+				<conditionChain ref="a" class="conditionChain" v-show="entity == 'a'" entity="a" @change="allConditions.a = $event"></conditionChain>
+				<tableFilter ref="tableFilter" :entity="entity" :index="index" :allConditions="allConditions" @change="selectedNodes = $event"></tableFilter>
 			</v-card-text>
 			<v-card-actions>
 				<v-btn color="primary" @click="emit()">Aplicar</v-btn>
@@ -56,6 +56,19 @@ seleccionarlos directamente, o crear condiciones para filtrarlos. Al finalizar, 
 			}
 		},
 		methods: {
+			reset() {
+				this.$refs.e.reset()
+				this.$refs.m.reset()
+				this.$refs.a.reset()
+				this.$refs.tableFilter.reset()
+				this.selectedNodes = []
+				this.allConditions = {
+					e: [],
+					m: [],
+					a: []
+				}
+				this.index = []
+			},
 			emit() {
 				for (var record of Object.values(this.index[this.entity])) record.selected = false
 				for (var node of this.selectedNodes[this.entity]) this.index[this.entity][node.id].selected = true

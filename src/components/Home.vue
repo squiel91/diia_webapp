@@ -8,13 +8,13 @@
       		clipped
       		app
 			:mobile-break-point="500"
-			style="z-index: 200; width: 390px"
+			style="z-index: 200; width: 390px; overflow: hidden;"
 			class="pa-0"
     	>
-    		<div class="filtersDrawer" @click.stop="(drawer = !drawer) && (rearange = false)"><div class="textFilter">{{drawer? '&gt;':'&lt;'}}<br><br>F<br>I<br>L<br>T<br>R<br>O<br>S<br><br>{{drawer? '&gt;':'&lt;'}}</div></div>
+    		<div class="filtersDrawer" @click.stop="toggleFilterDrawer()"><div class="textFilter">{{drawer? '&gt;':'&lt;'}}<br><br>F<br>I<br>L<br>T<br>R<br>O<br>S<br><br>{{drawer? '&gt;':'&lt;'}}</div></div>
 			<filters 
 			 style="padding-left: 14px" 
-			 class="ma-3"
+			 class="ml-3 mt-0 mr-0"
 			 ref="filter" 
 			 :course="course" 
 			 :index="dataGraphIndex"
@@ -34,7 +34,7 @@
 			class="pa-0"
 			:class="{closed: !analisisDrawer}"
     	>
-    		<div :class="{open: analisisDrawer}" class="analisisDrawer" @click.stop="openAnalisisDrawer()"><div class="textFilter">{{!analisisDrawer? '&gt;':'&lt;'}}<br><br>E<br>S<br>T<br>A<br>D<br>Í<br>S<br>T<br>I<br>C<br>A<br>S<br><br>{{!analisisDrawer? '&gt;':'&lt;'}}</div></div>
+    		<div :class="{open: analisisDrawer}" class="analisisDrawer" @click.stop="toggleAnalisisDrawer()"><div class="textFilter">{{!analisisDrawer? '&gt;':'&lt;'}}<br><br>E<br>S<br>T<br>A<br>D<br>Í<br>S<br>T<br>I<br>C<br>A<br>S<br><br>{{!analisisDrawer? '&gt;':'&lt;'}}</div></div>
 			<analisis 
 			 ref="analisis"
 			 @clicked="clicked = $event"
@@ -101,9 +101,14 @@
 			}
 		},
 		methods: {
-			openAnalisisDrawer() {
+			toggleAnalisisDrawer() {
 				 this.$refs.analisis.adjust_height()
 				 this.analisisDrawer = !this.analisisDrawer
+			},
+			toggleFilterDrawer() {
+				this.$refs.filter.adjust_height()
+				this.drawer = !this.drawer
+				this.rearange = false
 			},
 			individualSelection(event) {
 				this.$refs.graph.individualSelection(event)
@@ -124,6 +129,8 @@
 					this.dataGraph = {}
 					this.dataGraph.nodes = data.body.nodos
 					this.dataGraph.interactions = data.body.interacciones
+					this.dataGraphIndex.nodes = {} 
+					this.dataGraphIndex.edges = {} 
 					for (var node of this.dataGraph.nodes) {
 						this.dataGraphIndex.nodes[node.id] = node
 					}
@@ -153,6 +160,7 @@
 					this.$refs.nodedetailed.reset()
 					this.$refs.graph.reset()
 					this.$refs.filter.softReset()
+					this.filterConditions = {}
 					this.fetchData()
 				}
 			}
@@ -187,6 +195,7 @@
 
 	.filtersDrawer, .analisisDrawer {
 		overflow-x: hidden;
+		overflow-y: hidden;
 		position: absolute;
 		top: 0pt;
 		width: 12pt;
@@ -200,13 +209,9 @@
 	}
 
 	.analisisDrawer {
-		overflow-y: hidden;
 		height: 100%;
 		padding-top: 100pt;
 		left: 424px;
-	}
-	.analisisDrawer {
-	    overflow:auto;
 	}
 
 	.filtersDrawer:hover, .analisisDrawer:hover {
@@ -215,13 +220,5 @@
 
 	.textFilter {
 		text-align: center
-	}
-
-	.open {
-	    /*left: 410px !important;*/
-	}
-
-	.closed {
-		overflow-y: hidden;
 	}
 </style>

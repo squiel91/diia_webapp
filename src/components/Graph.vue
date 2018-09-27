@@ -192,10 +192,10 @@
 								combined_edge.polarity.positive += 1
 							}
 							if (interaction.polaridad == 'e') {
-								combined_edge.polarity.negative += 1
+								combined_edge.polarity.neutral += 1
 							}
 							if (interaction.polaridad == 'n') {
-								combined_edge.polarity.neutral += 1
+								combined_edge.polarity.negative += 1
 							}
 						}
 
@@ -206,16 +206,18 @@
 							return `rgb(${color_val}, ${color_val}, ${color_val})`
 					}
 					function polarity_color(polarity, value, alternativeFunction) {
-
-						var total_polarity = polarity.positive + polarity.negative + polarity.neutral
-						var polarity_positive = polarity.positive / total_polarity
-						var polarity_negative = polarity.negative / total_polarity
-
-						var polarity_val = 0 - polarity_negative + polarity_positive
-						if (polarity_negative + polarity_positive == 0)
- 							return alternativeFunction(value)
-						else
- 							return `rgb(${polarity_negative * 255}, ${polarity_positive * 255}, 0)`
+							let color_pallet = {
+								horror: '#eb5a46',
+								bad: '#f2d600',
+								good: '#61bd4f',
+								amazing: '#1f8f4e' 
+							}
+							var polarity_saldo = polarity.positive - polarity.negative
+							if (polarity_saldo >= 2) return color_pallet.amazing
+							if (polarity_saldo >= 1) return color_pallet.good
+							if (polarity_saldo >= 0) return alternativeFunction(value)
+							if (polarity_saldo >= -1) return color_pallet.bad
+							return color_pallet.horror
 					}
 					for (const combined_edge of Object.values(this.combined_edges_index)) {
 						this.combined_edges.push({
@@ -232,6 +234,7 @@
 				return this.combined_edges
 			},
 			renderGraph() {
+
 				// this.$refs.loadingMessage.innerText = 'Dibujando el grafo del curso'
 				this.nodes = this.dataGraph.nodes
 				this.edges = this.dataGraph.interactions
@@ -249,7 +252,7 @@
 					m_tex: 'img/tex.png',
 					m_gif: 'img/gif.png',
 					m_des: 'img/unknown.png',
-					m_lik: 'img/recurso.svg'
+					m_lik: 'img/recurso.png'
 				}
 
 				sigma.utils.pkg('sigma.canvas.nodes');

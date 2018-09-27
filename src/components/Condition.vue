@@ -109,7 +109,7 @@
 		}
 	]
 
-	let PLATFORMS = ['Facebook', 'PAM', 'CREA 2', 'Moodle']
+	let PLATFORMS = ['Facebook', 'PAM', 'CREA 2', 'Uruguay Educa']
 
 	let CONTENT_TYPES = ['Video', 'Imágen', 'Texto', 'GIF animado', 'Desconocido', 'Enlace']
 	

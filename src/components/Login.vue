@@ -15,7 +15,7 @@
 					></v-text-field>
 					<v-text-field
 					name="password"					
-					label="Constaseña"
+					label="Contraseña"
 					v-model="inputPass"
 					@keyup.enter="signIn()"
 					:rules="[(v) => v && v.length >= 6? true : 'Tiene un minimo de 6 caracteres']"				
@@ -25,7 +25,7 @@
 					></v-text-field>
 					<v-btn class="wide ma-0 mb-2" :loading="loading" full-width color="primary" @click="signIn()">
 						<span>Iniciar sesión</span></v-btn>
-					<a @click.stop="privacy = true" href="#">Politicas de privacidad</a><br>
+					<a @click.stop="privacy = true" href="#">Políticas de privacidad</a><br>
 				</v-form>
 			</div>
 			<div class="column">
@@ -35,11 +35,11 @@
 		<v-dialog v-model="privacy">
         <v-card>
           <v-card-title>
-            <h1>Politicas de privacidad</h1>
+            <h1>Políticas de privacidad</h1>
           </v-card-title>
 		  <v-card-text>
 			  	<h2>Sobre el Proyecto DIIA</h2>
-				<p>El Proyecto DIIA (Descubrimiento de Interacciones que Impactan en el Aprendizaje) es
+				<p>El Proyecto DIIA (Detección de Interacciones que Impactan en el Aprendizaje) es
 				un proyecto de investigación financiado por la ANII que pretende brindar un ambiente de
 				software a los docentes para descubrir patrones semánticos de interacción dentro de sus
 				propios cursos y facilitando así la toma de decisiones. En ese sentido se procesarán los

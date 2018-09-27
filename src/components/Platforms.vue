@@ -1,6 +1,6 @@
 <template>
 	<ul class="interactionFilter">
-		<li @click="click('m')" :class="{selected: platforms.m}"><img src="img/moodle.png"/><span class="label">Moodle</span></li>
+		<li @click="click('m')" :class="{selected: platforms.m}"><img src="img/moodle.png"/><span class="label">Uruguay Educa</span></li>
 		<li @click="click('c')" :class="{selected: platforms.c}"><img src="img/crea.jpg"/><span class="label">CREA 2</span></li>
 		<li @click="click('p')" :class="{selected: platforms.p}"><img src="img/pam.png"/><span class="label">PAM</span></li>
 		<li @click="click('f')" :class="{selected: platforms.f}"><img src="img/facebook.png"/><span class="label">Facebook</span></li>
@@ -72,13 +72,12 @@
 	}
 
 	span.label {
-	    padding-top: 2pt;
-	    padding-left: 25pt;
-	    display: block;
+	    padding-left: 5pt;
+	    position: relative;
+	    bottom: 6pt;
 	}
 
 	img {
-		position: absolute;
 		width: 20pt;
 	}
 
